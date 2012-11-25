@@ -63,7 +63,7 @@ function initControls(exonSprites,gameObj){
     {
         controlSprites[0][i] = new lime.Sprite().setAnchorPoint(0,0)
             .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
-            .setPosition(exonSprites[i][0].getPosition().x, gameObj.controlsLayerH+40)
+            .setPosition(exonSprites[i][0].getPosition().x, gameObj.puzzleLayerH+gameObj.controlsLayerH/2-gameObj.puzzleTileSize/2)
             .setFill(exonSprites[i][0].getFill())
             .setOpacity(.25);
 
@@ -85,10 +85,13 @@ transcriptGame.start = function(){
     var gameObj = {
         width: 1024,
         height: 768,
-        controlsLayerW: 1024,
-        controlsLayerH: 384,
-        puzzleLayerW: 1024,
-        puzzleLayerH: 384,
+        controlsLayerW: 768,
+        controlsLayerH: 192,
+        puzzleLayerW: 768,
+        puzzleLayerH: 576,
+
+        listLayerW: 256,
+        listLayerH: 768,
 
         puzzleTileSize: 30,
         puzzleTileGap: 15
@@ -113,9 +116,11 @@ transcriptGame.start = function(){
 
     var puzzleLayer = new lime.Layer().setAnchorPoint(0, 0);
     var controlsLayer = new lime.Layer().setAnchorPoint(0, 0);
+    var listLayer = new lime.Layer().setAnchorPoint(0,0);
 
     gameScene.appendChild(puzzleLayer);
     gameScene.appendChild(controlsLayer);
+    gameScene.appendChild(listLayer);
 
     var controlsArea = new lime.Sprite().setAnchorPoint(0, 0);
     controlsArea.setPosition(0,gameObj.height-gameObj.controlsLayerH);
@@ -126,10 +131,17 @@ transcriptGame.start = function(){
 
     var puzzleArea = new lime.Sprite().setAnchorPoint(0,0)
         .setSize(gameObj.puzzleLayerW,gameObj.puzzleLayerH)
+        .setFill('#333333')
         .setStroke(1,'#FF0000');
     puzzleLayer.appendChild(puzzleArea);
 
 
+    var listArea = new lime.Sprite().setAnchorPoint(0,0)
+        .setSize(gameObj.listLayerW,gameObj.listLayerH)
+        .setFill('#333333')
+        .setPosition(gameObj.width-gameObj.listLayerW,0)
+        .setStroke(1,'#00FF00');
+    listLayer.appendChild(listArea);
 
     // Set up initial puzzle configuration
     exonSprites = initGame(numExons,exonCount, gameObj);
