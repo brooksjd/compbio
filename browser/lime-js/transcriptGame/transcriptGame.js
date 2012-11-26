@@ -14,6 +14,69 @@ goog.require('lime.animation.FadeTo');
 goog.require('lime.animation.ScaleTo');
 goog.require('lime.animation.MoveTo');
 
+// Function to set up puzzle based on puzzle parameters
+function initGame(numExons, exonCount, gameObj){
+
+    // Calculate where exon blocks will start
+    if (numExons % 2 == 0)
+    {
+        var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*(numExons/2);
+    }
+    else
+    {
+        var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*((numExons-1)/2)-gameObj.puzzleTileSize/2;
+    }
+    var exonSprites = new Array();
+    
+    colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
+    coloridx = 0;
+
+    // Add blocks by column
+    for (var i=0; i<numExons; i++)
+    {
+        exonSprites[i] = new Array();
+        for (var j=0; j<exonCount[i]; j++)
+        {
+            exonSprites[i][j] = new lime.Sprite().setAnchorPoint(0,0)
+                .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
+                .setPosition(blockStart, gameObj.puzzleLayerH-40-j*(gameObj.puzzleTileSize+1))
+                .setFill(colorList[coloridx]);
+            //puzzleLayer.appendChild(exonSprites[i][j]);
+
+        }
+        coloridx++;
+        if (coloridx == colorList.length)
+            coloridx = 0;
+
+        blockStart += gameObj.puzzleTileSize+gameObj.puzzleTileGap;
+    }
+
+    return exonSprites;
+}
+
+
+// Add initial row of control sprites
+function initControls(exonSprites,gameObj){
+    controlSprites = new Array();
+    controlSprites[0] = new Array();
+    for (var i=0; i<4; i++)
+    {
+        controlSprites[0][i] = new lime.Sprite().setAnchorPoint(0,0)
+            .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
+            .setPosition(exonSprites[i][0].getPosition().x, gameObj.controlsLayerH+40)
+            .setFill(exonSprites[i][0].getFill())
+            .setOpacity(.25);
+
+        goog.events.listen(controlSprites[0][i],goog.events.EventType.CLICK,function(e){
+            if (this.getOpacity() == .25)
+                this.setOpacity(1);
+            else
+                this.setOpacity(.25);
+        });
+    }
+
+    return controlSprites;
+}
 
 // entrypoint
 transcriptGame.start = function(){
@@ -66,38 +129,19 @@ transcriptGame.start = function(){
         .setStroke(1,'#FF0000');
     puzzleLayer.appendChild(puzzleArea);
 
-    // Load puzzle
-    // Calculate where exon blocks will start
-    if (numExons % 2 == 0)
-    {
-        var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*(numExons/2);
-    }
-    else
-    {
-        var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*((numExons-1)/2)-gameObj.puzzleTileSize/2;
-    }
-
-    console.log(blockStart);
 
 
-    // TODO: probably stick into some sort of initialize function
-    var exonSprites = new Array();
-    // Add blocks by column
+    // Set up initial puzzle configuration
+    exonSprites = initGame(numExons,exonCount, gameObj);
+    controlSprites = initControls(exonSprites,gameObj);
     for (var i=0; i<numExons; i++)
     {
-        exonSprites[i] = new Array();
         for (var j=0; j<exonCount[i]; j++)
         {
-            exonSprites[i][j] = new lime.Sprite().setAnchorPoint(0,0)
-                .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
-                .setPosition(blockStart, gameObj.puzzleLayerH-40-j*(gameObj.puzzleTileSize+1))
-                .setFill('#FF0000'); // TODO: alternating colors
             puzzleLayer.appendChild(exonSprites[i][j]);
-
         }
-        blockStart += gameObj.puzzleTileSize+gameObj.puzzleTileGap;
+        controlsLayer.appendChild(controlSprites[0][i]);
     }
-
 
 	// set current scene active
 	director.replaceScene(gameScene);
