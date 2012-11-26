@@ -42,19 +42,25 @@ For our game we intend to use genomic data from the mouse to ease comparison wit
 However, to be able to stratify the game into difficulty levels we would organize the genes by number of exons and amount of disagreement on genes' isoforms using other tools. \\
 After pre-processing the reads with TopHat, we would push exon and junction expression level data to a database for easy retrieval. We chose to use a database since the voluminous read data is not relevant to our problem and therefore not useful to store.
 \subsubsection*{Game Development}
-Our game would have 2 major components:
+Our game has two major components:
 \begin{enumerate}
 \item A backend for supplying challenges to players and aggregating their solutions. We would build this backend using a Python/Django webserver and a MySQL database or Google App Engine datastore.
-\item The actual game would be built as either a Java desktop application or browser-based game. In either case, our proposed user interface is demonstrated in Figure \ref{fig:proposedui}
+\item The actual game is built as a browser-based game using HTML 5.
+
 \begin{figure}[H]
-\includegraphics[scale=0.5]{ProposedUI.png}
-\caption{Proposed user interface of transcriptome assembly game}
+\includegraphics[scale=0.5]{gameshot.png}
+\caption{User interface of transcriptome assembly game.}
 \centering
 \label{fig:proposedui}
 \end{figure}
+
 When the game starts, players will be presented with a gene where each column of blocks represent exons discovered by TopHat, and column heights represent their relative abundances. Furthermore, columns will contain ``linked" boxes that contain a unique identifier shared with a box in another column.
 These represent reads that mapped to more than one exon and spanned a splice junction. Players will then be able to copy this entire gene into a transcript, delete exons and vary the relative expression levels of their transcripts in order to remove boxes from the puzzle. ``Linked" boxes can only be removed by
-transcripts that contain both exons corresponding to the ``linked" boxes without the exons in between them. Players will be scored using the following criteria:
+transcripts that contain both exons corresponding to the ``linked" boxes without the exons in between them.
+
+An example puzzle is shown in Figure \ref{fig:proposedui}. Users can toggle exons to create transcripts and then increase or decrease abundance the transcripts they create. Increasing abundance for a transcript
+will remove one block from each exon column included in the transcript in the puzzle. Notice that the first and third column have ``linked" blocks that can only be removed by a transcript that contains the red and blue exon, but not the green exon. 
+Players will be scored using the following criteria:
 \begin{itemize}
 \item Agreement with exon and junction read data
 \item Number of transcripts created
