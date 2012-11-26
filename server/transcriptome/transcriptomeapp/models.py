@@ -4,27 +4,31 @@ import logging, string, os
 logger = logging.getLogger(__name__)
 
 class Experiment(models.Model):
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=200, unique=True)
 
 class Gene(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     
 class Exon(models.Model):
-    name = models.CharField(max_length=50)
-    length = models.IntegerField()    
     gene = models.ForeignKey(Gene)
-    order = models.IntegerField()
-
-class SingleExonRead(models.Model):
+    start = models.IntegerField()
+    end = models.IntegerField()
+    
+class Read(models.Model):
     readCount = models.IntegerField()
-    exon = models.ForeignKey(Exon)
+    exons = models.ManyToManyField(Exon)
     experiment = models.ForeignKey(Experiment)
-        
-class JunctionRead(models.Model):
-    experiment = models.ForeignKey(Experiment)
-    exon1 = models.ForeignKey(Exon)
-    exon2 = models.ForeignKey(Exon)
-    count = models.IntegerField()
+
+#class SingleExonRead(models.Model):
+#    readCount = models.IntegerField()
+#    exon = models.ForeignKey(Exon)
+#    experiment = models.ForeignKey(Experiment)
+#        
+#class JunctionRead(models.Model):
+#    experiment = models.ForeignKey(Experiment)
+#    exon1 = models.ForeignKey(Exon, related_name='junction_reads_1')
+#    exon2 = models.ForeignKey(Exon, related_name='junction_reads_2')
+#    count = models.IntegerField()
     
 class Result(models.Model):
     gene = models.ForeignKey(Gene)
