@@ -13,6 +13,7 @@ goog.require('lime.animation.Spawn');
 goog.require('lime.animation.FadeTo');
 goog.require('lime.animation.ScaleTo');
 goog.require('lime.animation.MoveTo');
+goog.require('lime.GlossyButton');
 
 // Function to set up puzzle based on puzzle parameters
 function initGame(numExons, exonCount, gameObj){
@@ -58,20 +59,19 @@ function initGame(numExons, exonCount, gameObj){
 // Add initial row of control sprites
 function initControls(exonSprites,gameObj){
     controlSprites = new Array();
-    controlSprites[0] = new Array();
     for (var i=0; i<4; i++)
     {
-        controlSprites[0][i] = new lime.Sprite().setAnchorPoint(0,0)
+        controlSprites[i] = new lime.Sprite().setAnchorPoint(0,0)
             .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
             .setPosition(exonSprites[i][0].getPosition().x, gameObj.puzzleLayerH+gameObj.controlsLayerH/2-gameObj.puzzleTileSize/2)
             .setFill(exonSprites[i][0].getFill())
-            .setOpacity(.25);
+            .setOpacity(.1);
 
-        goog.events.listen(controlSprites[0][i],goog.events.EventType.CLICK,function(e){
-            if (this.getOpacity() == .25)
+        goog.events.listen(controlSprites[i],goog.events.EventType.CLICK,function(e){
+            if (this.getOpacity() == .1)
                 this.setOpacity(1);
             else
-                this.setOpacity(.25);
+                this.setOpacity(.1);
         });
     }
 
@@ -86,9 +86,9 @@ transcriptGame.start = function(){
         width: 1024,
         height: 768,
         controlsLayerW: 768,
-        controlsLayerH: 192,
+        controlsLayerH: 128,
         puzzleLayerW: 768,
-        puzzleLayerH: 576,
+        puzzleLayerH: 640,
 
         listLayerW: 256,
         listLayerH: 768,
@@ -152,10 +152,45 @@ transcriptGame.start = function(){
         {
             puzzleLayer.appendChild(exonSprites[i][j]);
         }
-        controlsLayer.appendChild(controlSprites[0][i]);
+        controlsLayer.appendChild(controlSprites[i]);
     }
 
-	// set current scene active
+    // Add labels for screenshot purposes
+    var label1 = new lime.Label().setAnchorPoint(0,0)
+        .setPosition(exonSprites[0][1].getPosition().x+10,exonSprites[0][1].getPosition().y+10)
+        .setText('A')
+        .setFontColor('#FFFFFF');
+    puzzleLayer.appendChild(label1);
+
+    var label2 = new lime.Label().setAnchorPoint(0,0)
+        .setPosition(exonSprites[2][2].getPosition().x+10,exonSprites[2][2].getPosition().y+10)
+        .setText('A')
+        .setFontColor('#FFFFFF');
+    puzzleLayer.appendChild(label2);
+	
+    // Control buttons
+    var resetButton = new lime.GlossyButton().setAnchorPoint(0,0)
+        .setSize(80,40)
+        .setColor('#E3E3E3')
+        .setText('Reset')
+        .setPosition(controlSprites[0].getPosition().x-gameObj.puzzleTileSize-50, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
+    controlsLayer.appendChild(resetButton);
+
+    var plusButton = new lime.GlossyButton().setAnchorPoint(0,0)
+        .setSize(15,15)
+        .setColor('#E3E3E3')
+        .setText('+')
+        .setPosition(controlSprites[controlSprites.length-1].getPosition().x+gameObj.puzzleTileSize+25,controlSprites[controlSprites.length-1].getPosition().y);
+    controlsLayer.appendChild(plusButton);
+
+    var minusButton = new lime.GlossyButton().setAnchorPoint(0,0)
+        .setSize(15,15)
+        .setColor('#E3E3E3')
+        .setText('-')
+        .setPosition(plusButton.getPosition().x, plusButton.getPosition().y+25);
+    controlsLayer.appendChild(minusButton);
+
+    // set current scene active
 	director.replaceScene(gameScene);
 
 }
