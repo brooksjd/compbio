@@ -269,6 +269,25 @@ transcriptGame.start = function(){
         .setPosition(controlSprites[0].getPosition().x-gameObj.puzzleTileSize-50, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
     controlsLayer.appendChild(resetButton);
 
+    // reset button logic
+    goog.events.listen(resetButton, ['mousedown','touchstart'],function(e){
+        // Clear transcript lists
+        transcriptList = [];
+        transcriptCount = [];
+        redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
+
+        // Reset exon sprites and exon indexes
+        for (var i=0; i<exonSprites.length; i++)
+        {
+            for (var j=0; j<exonSprites[i].length; j++)
+            {
+                exonSprites[i][j].setOpacity(1);
+            }
+            exonIdxs[i] = exonSprites[i].length-1;
+        }
+                
+    });
+
     var plusButton = new lime.GlossyButton().setAnchorPoint(0,0)
         .setSize(15,15)
         .setColor('#E3E3E3')
@@ -297,7 +316,7 @@ transcriptGame.start = function(){
                 valid = false;
                 break;
             }
-            else if (currTranscript[i] == i)
+            else if (currTranscript[i] == 1)
                 allempty = false;
         }
         if (valid && !allempty)
