@@ -1,0 +1,19 @@
+
+/server/transcriptome/__init__.pyc
+/server/transcriptome/settings.pyc
+/server/transcriptome/transcriptomeapp/__init__.pyc
+/server/transcriptome/transcriptomeapp/admin.pyc
+/server/transcriptome/transcriptomeapp/management/__init__.pyc
+/server/transcriptome/transcriptomeapp/management/commands/__init__.pyc
+/server/transcriptome/transcriptomeapp/management/commands/loaddata.pyc
+/server/transcriptome/transcriptomeapp/models.pyc
+/server/transcriptome/transcriptomeapp/urls.pyc
+/server/transcriptome/transcriptomeapp/views.pyc
+/server/transcriptome/urls.pyc
+/server/transcriptome/mm9_hydrolysis.bed
+/server/transcriptome/filtered_transcriptome.gtf
+/server/transcriptome/settings.py
+/midreport/Proposal.synctex.gz
+/midreport/Proposal.aux
+/midreport/Proposal.log
+/server/transcriptome/sqlite - Copy.db

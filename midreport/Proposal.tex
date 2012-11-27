@@ -78,10 +78,12 @@ We would also be interested in the time it took players to finish a round and if
 
 \subsection*{Data Processing}
 We were able to successfully obtain the same read data used by Trapnell et al. \citep{trapnell2010transcript} and use TopHat to map reads to NCBI build 37.1 of the mouse genome.
-This resulted in 13,378,594 reads mapped to the mouse genome and 103,748 possible splice junctions identified.
+This resulted in 13,378,594 reads mapped to the mouse genome and 103,748 possible splice junctions identified. 
 
+We also simulated reads using Flux Simulator. We obtained annotated data from the mouse genome mm9. To make the problem more tractable, we eliminated all instances of intron-skipping and used only genes with at least 2 transcripts. We also capped the number of exons to 200,000 because our computing memory resources could not simulate much more exons than that. We simulated 15,000,000 reads of 75 nucleotides each and pushed information about read count and mapped exons to the database.
 
 \subsection*{Server and Database}
+We utilize a Python/Django server to support the front end communicating using Javascript Object Notation (JSON) format. The database is a MySQL database running on the internal CSAIL MySQL servers. The server-front end communication will allow the front-end pull game data from the database and send player results to the server.
 
 \subsection*{Game Front End}
 The game front end is currently being built using the LimeJS HTML 5 framework. We have designed the main layout for the game scenes where the main interaction between players
@@ -91,23 +93,29 @@ server communication are currently being added.
 
 
 \section{Updated Timeline}
-\begin{tabularx}{\linewidth}{X || l || l || X}
+\begin{tabularx}{\linewidth}{X || l || l || l}
 \textbf{Activity} & \textbf{Start Date} & \textbf{Completion Date} & \textbf{Responsibility} \\ 
 \hline
-Data collection and simulated data generation\footnotemark[1] & October 23rd & October 27th & J.B. \\
+Data collection\footnotemark[1] & October 23rd & October 27th & J.B. \\
 \hline
-Run TopHat, extract exon and junction expression levels and pipe to server database\footnotemark[1] & October 27th & November 5th & J.B. \\
+Run TopHat, extract exon and junction expression levels\footnotemark[1] & October 27th & November 5th & J.B. \\
 \hline
-Create web server\footnotemark[2] & November 1st & November 10th & C.E. \\
+Create web server skeleton and design database schema\footnotemark[1] & November 1st & November 10th & C.E. \\
 \hline
-Setup framework and initial game layout\footnotemark[1] & November 5th & November 17th & J.B. \\
+Setup front-end UI framework and initial game layout\footnotemark[1] & November 5th & November 17th & J.B. \\
 \hline
 Add core gameplay functionality\footnotemark[2] & November 17th & November 28th & C.E. and J.B.  \\
+\hline
+Filter simulated transcriptome data to eliminate intron-skipping isoforms and run RNA-seq simulation\footnotemark[1] & November 17th & November 28th & C.E. \\
 \hline
 Add front end to server communication\footnotemark[2] & November 17th & November 28th & C.E. and J.B.  \\
 \hline
 Mid-course report preparation\footnotemark[2] & November 23rd & November 25th & C.E. and J.B. \\
 \hline
+Push simulated data to the database \footnotemark[2] & November 25th & November 28th & C.E \\
+\hline
+Push real read data to the database & November 27th & December 2nd & C.E \\
+hliner
 Test on users & November 28th & December 2nd & C.E. \\
 \hline
 Investigate intersection with Cufflinks & December 2nd & December 4th & J.B. \\
