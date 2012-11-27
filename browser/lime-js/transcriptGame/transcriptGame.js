@@ -55,6 +55,59 @@ function initGame(numExons, exonCount, gameObj){
     return exonSprites;
 }
 
+// Adds a transcript to the current list and redraws list screen
+function addTranscript(currTranscript, transcriptList, transcriptCount, gameObj, listLayer, exonSprites){
+    // Check to see if transcript already exists
+    var exists = false;
+    for (var i=0; i<transcriptList.length && !exists; i++)
+    {
+        exists = true;
+        for (var j=0; j<currTranscript.length; j++)
+        {
+            if (transcriptList[i][j] != currTranscript[j])
+            {
+                exists = false;
+                break;
+            }
+        }
+
+        if (exists)
+        {
+            transcriptCount[i]++;
+        }
+    }
+
+    // Add transcript to list if new
+    if (!exists)
+    {
+        transcriptList[transcriptList.length] = currTranscript;
+        transcriptCount[transcriptCount.length] = 1;
+    }
+
+    // Redraw transcript List
+    listLayer.removeAllChildren();
+    for (var i=0; i<transcriptList.length; i++)
+    {
+        // Add transcript blocks
+        for (var j=0; j<transcriptList[i].length; j++)
+        {
+            currBlock = new lime.Sprite().setAnchorPoint(0,0)
+                .setSize(gameObj.listTileSize,gameObj.listTileSize)
+                .setFill(exonSprites[j][0].getFill())
+                .setPosition(gameObj.puzzleLayerW+j*(gameObj.listTileSize+gameObj.listTileGap)+5, 5+i*(gameObj.listTileSize+gameObj.listTileGap));
+            if (transcriptList[i][j] == 0)
+                currBlock.setOpacity(.1);
+            listLayer.appendChild(currBlock);
+        }
+
+        // Add transcript count
+        currLabel = new lime.Label().setAnchorPoint(0,0)
+            .setText('x '+transcriptCount[i])
+            .setFontColor('#FFFFFF')
+            .setPosition(gameObj.width-30,5+i*(gameObj.listTileSize+gameObj.listTileGap));
+        listLayer.appendChild(currLabel);
+    }
+}
 
 // Add initial row of control sprites
 function initControls(exonSprites,gameObj){
@@ -94,7 +147,10 @@ transcriptGame.start = function(){
         listLayerH: 768,
 
         puzzleTileSize: 30,
-        puzzleTileGap: 15
+        puzzleTileGap: 15,
+    
+        listTileSize: 10,
+        listTileGap: 5
     }
 
 
@@ -120,7 +176,6 @@ transcriptGame.start = function(){
 
     gameScene.appendChild(puzzleLayer);
     gameScene.appendChild(controlsLayer);
-    gameScene.appendChild(listLayer);
 
     var controlsArea = new lime.Sprite().setAnchorPoint(0, 0);
     controlsArea.setPosition(0,gameObj.height-gameObj.controlsLayerH);
@@ -141,17 +196,20 @@ transcriptGame.start = function(){
         .setFill('#333333')
         .setPosition(gameObj.width-gameObj.listLayerW,0)
         .setStroke(1,'#00FF00');
-    listLayer.appendChild(listArea);
+    gameScene.appendChild(listArea);
 
+    gameScene.appendChild(listLayer);
     // Set up initial puzzle configuration
     exonSprites = initGame(numExons,exonCount, gameObj);
     controlSprites = initControls(exonSprites,gameObj);
+    exonIdxs = new Array();
     for (var i=0; i<numExons; i++)
     {
         for (var j=0; j<exonCount[i]; j++)
         {
             puzzleLayer.appendChild(exonSprites[i][j]);
         }
+        exonIdxs[i] = exonSprites[i].length-1;
         controlsLayer.appendChild(controlSprites[i]);
     }
 
@@ -160,14 +218,18 @@ transcriptGame.start = function(){
         .setPosition(exonSprites[0][1].getPosition().x+10,exonSprites[0][1].getPosition().y+10)
         .setText('A')
         .setFontColor('#FFFFFF');
-    puzzleLayer.appendChild(label1);
+    //puzzleLayer.appendChild(label1);
 
     var label2 = new lime.Label().setAnchorPoint(0,0)
         .setPosition(exonSprites[2][2].getPosition().x+10,exonSprites[2][2].getPosition().y+10)
         .setText('A')
         .setFontColor('#FFFFFF');
-    puzzleLayer.appendChild(label2);
+    //puzzleLayer.appendChild(label2);
 	
+
+    transcriptList = new Array();
+    transcriptCount = new Array();
+
     // Control buttons
     var resetButton = new lime.GlossyButton().setAnchorPoint(0,0)
         .setSize(80,40)
@@ -182,6 +244,48 @@ transcriptGame.start = function(){
         .setText('+')
         .setPosition(controlSprites[controlSprites.length-1].getPosition().x+gameObj.puzzleTileSize+25,controlSprites[controlSprites.length-1].getPosition().y);
     controlsLayer.appendChild(plusButton);
+
+    // plus button logic
+    goog.events.listen(plusButton, ['mousedown','touchstart'],function(e){
+        currTranscript = new Array();
+        for (var i=0; i<controlSprites.length; i++)
+        {
+            if (controlSprites[i].getOpacity() == 1)
+                currTranscript[i] = 1;
+            else
+                currTranscript[i] = 0;
+        }
+
+        // Check exon availiblity
+        var valid = true;
+        var allempty = true;
+        for (var i=0; i<exonIdxs.length; i++)
+        {
+            if (currTranscript[i] == 1 && exonIdxs[i] < 0)
+            {
+                valid = false;
+                break;
+            }
+            else if (currTranscript[i] == i)
+                allempty = false;
+        }
+        if (valid && !allempty)
+        {
+            
+            for (var i=0; i<exonIdxs.length; i++)
+            {
+                if (currTranscript[i] == 1)
+                {
+                    exonSprites[i][exonIdxs[i]].setOpacity(0);
+                    exonIdxs[i] = exonIdxs[i]-1;
+                }
+            }
+
+            addTranscript(currTranscript,transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
+        }
+
+        // TODO: linked logic
+    });
 
     var minusButton = new lime.GlossyButton().setAnchorPoint(0,0)
         .setSize(15,15)
