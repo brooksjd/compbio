@@ -83,7 +83,7 @@ We would also be interested in the time it took players to finish a round and if
 
 \subsection*{Data Processing}
 We were able to successfully obtain the same read data used by Trapnell et al. \citep{trapnell2010transcript} and use TopHat to map reads to NCBI build 37.1 of the mouse genome.
-This resulted in 13,378,594 reads mapped to the mouse genome and 103,748 possible splice junctions identified. 
+This resulted in 13,378,594 reads mapped to the mouse genome and 103,748 possible splice junctions identified. Our framework for aggregating read information and pushing it to the database uses GTF format for the gene annotations and BED format for the short reads. We will have to convert TopHat's output from the SAM format to these formats to be pushed to our database.
 
 We also simulated reads using Flux Simulator. We obtained data from the mouse mm9 genome annotated with the locations of genes, exons and transcripts. To make the problem more tractable, we eliminated all instances of intron-skipping and used only genes with at least 2 transcripts. We, however, ignored the issue of varying transcription starts and represented the data such that all transcripts are assumed to start at the same base in the start exon(s). We also capped the number of exons to 200,000 because our computing memory resources could not simulate much more exons than that. We simulated 15,000,000 reads of 75 nucleotides long each and pushed information about read count and mapped exons to the database.
 
