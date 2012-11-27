@@ -55,11 +55,10 @@ Our game has two major components:
 \label{fig:proposedui}
 \end{figure}
 
-When the game starts, players will be presented with a gene where each column of blocks represents an exons discovered by TopHat (or obtained from our simulations), and column heights represent their relative abundances. Furthermore, columns will contain ``linked" blocks that contain a unique identifier shared with a box in another column.
-These represent reads that mapped to more than one exon and spanned a splice junction. Players will then be able to copy this entire gene into a transcript, delete exons and vary the relative expression levels of their transcripts in order to remove blocks from the puzzle. ``Linked" blocks can only be removed by
-transcripts that contain both exons corresponding to the ``linked" blocks without the exons in between them.
+When the game starts, players will be presented with a gene where each column of blocks represents an exons discovered by TopHat (or obtained from our simulations), and column heights represent their relative abundances. Furthermore, columns will contain ``linked" blocks that contain a unique identifier shared with a block in another column. These linked blocks represent reads that mapped to more than one exon that span a splice junction. 
+Players will then be able to copy this entire gene into a transcript, delete exons and vary the relative expression levels of their transcripts in order to remove blocks from the puzzle. Agreement with data represented by the ``Linked" blocks can only be accounted for by transcripts that contain both exons corresponding to the ``linked" blocks without the exons in between them.
 
-An example puzzle is shown in Figure \ref{fig:proposedui}. Users can toggle exons to create transcripts and then increase or decrease abundance the transcripts they create. Increasing abundance for a transcript
+An example puzzle is shown in Figure \ref{fig:proposedui}. Users can toggle exons to create transcripts and then increase or decrease the abundance of the transcripts they create. Increasing abundance for a transcript
 will remove one block from each exon column included in the transcript in the puzzle. Notice that the first and third column have ``linked" blocks that can only be removed by a transcript that contains the red and blue exon, but not the green exon. 
 Players will be scored using the following criteria:
 \begin{itemize}
@@ -69,8 +68,7 @@ Players will be scored using the following criteria:
 \end{itemize} 
 If time permits, we would include a feature that allows players split and merge exons to discover new splice sites and better explain read data.
 \end{enumerate}
-We will use the LimeJS\footnote{http://www.limejs.com/} HTML 5 framework to build the game, as this allows us to focus on the core gameplay elements and not on small coding details. Furthermore, an HTML 5 implementation means the game will be desktop and mobile
-compatible, and should therefore make it easy to present the game to our testing user base. We intend to develop this game as an open-source project released under the GNU public license.
+We are using the LimeJS\footnote{http://www.limejs.com/} HTML 5 framework to build the game, as this allows us to focus on the core gameplay elements and not on smaller user interface technicalities. Furthermore, a HTML 5 implementation means that the game will be desktop and mobile compatible, and should therefore make it easy to present the game to our testing user base. We intend to develop this game as an open-source project released under the GNU public license.
 \subsubsection*{Testing}
 We intend to recruit volunteer testers for our game from within the MIT community; classmates, dorm mates etc. We hope to have at least 50 different people test the game before the project deadline. Testing would focus on discovering bugs, improving the user interface to make the most of the players' ability, evaluating likeability and performing the primary purpose of the game; discovering transcripts and their expression levels. There would be two primary sources of test data:
 \begin{itemize}
@@ -87,17 +85,14 @@ We would also be interested in the time it took players to finish a round and if
 We were able to successfully obtain the same read data used by Trapnell et al. \citep{trapnell2010transcript} and use TopHat to map reads to NCBI build 37.1 of the mouse genome.
 This resulted in 13,378,594 reads mapped to the mouse genome and 103,748 possible splice junctions identified. 
 
-We also simulated reads using Flux Simulator. We obtained annotated data from the mouse genome mm9. To make the problem more tractable, we eliminated all instances of intron-skipping and used only genes with at least 2 transcripts. We also capped the number of exons to 200,000 because our computing memory resources could not simulate much more exons than that. We simulated 15,000,000 reads of 75 nucleotides each and pushed information about read count and mapped exons to the database.
+We also simulated reads using Flux Simulator. We obtained data from the mouse mm9 genome annotated with the locations of genes, exons and transcripts. To make the problem more tractable, we eliminated all instances of intron-skipping and used only genes with at least 2 transcripts. We, however, ignored the issue of varying transcription starts and represented the data such that all transcripts are assumed to start at the same base in the start exon(s). We also capped the number of exons to 200,000 because our computing memory resources could not simulate much more exons than that. We simulated 15,000,000 reads of 75 nucleotides long each and pushed information about read count and mapped exons to the database.
 
 \subsection*{Server and Database}
-We utilize a Python/Django server to support the front end communicating using Javascript Object Notation (JSON) format. The database is a MySQL database running on the internal CSAIL MySQL servers. The server-front end communication will allow the front-end to pull game data from the database and send player results to the server.
+We utilize a Python/Django server to support the front end. Server-front end communication will be utilize the Javascript Object Notation (JSON) format. The database is a MySQL database running on the internal CSAIL MySQL servers. The server-front end communication will allow the front-end to pull game data from the database and send player results to the server.
 
 \subsection*{Game Front End}
-The game front end is currently being built using the LimeJS HTML 5 framework. We have designed the main layout for the game scenes where the main interaction between players
-and the game will occur. Currently the game can load a list of exons and their corresponding abundances and display the corresponding puzzle. Users can then create new transcripts 
-by toggling which exons they want in their new transcript, and setting the abundance of that particular transcript. Some core functionality like scoring the user's solution and 
+The game front end is currently being built using the LimeJS HTML 5 framework. We have designed the main layout for the game scenes where the interaction between players and the game will occur. Currently the game can load a list of exons and their abundances and display the corresponding puzzle. Users can then create new transcripts by toggling which exons they want in their transcript, and setting the abundance of that particular transcript. Some core functionality like scoring the user's solution and 
 server communication are currently being added.
-
 
 \section{Updated Timeline}
 \begin{tabularx}{\linewidth}{X || l || l || l}
