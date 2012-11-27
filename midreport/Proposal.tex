@@ -19,7 +19,7 @@
 \maketitle
 
 \section*{Introduction}
-The reviewers of our first proposal primarily concerned with the specifics with our game implementation. In this revised proposal, we added more detail about specific elements of the game in order to address these concerns.
+The reviewers of our first proposal were primarily concerned with the specifics of our game implementation. In this revised proposal, we added more detail about specific elements of the game in order to address these concerns.
 Furthermore, we clarified the main use case of our game in the \emph{Innovation} section of this proposal, as it seemed we weren't clear in our first proposal about how the game could be best utilized for contributing to the field.
 
 \section*{Specific Aims}
@@ -34,13 +34,13 @@ The development of RNA-seq technology has greatly advanced the potential effecti
 
 \subsection*{Innovation}
 Human powered computation has been shown to be of use in biologically related problems \citep{kawrykow2012phylo, cooper2010predicting}. For example, Phylo allowed humans with no understanding of biology to perform multiple sequence alignment (MSA). Phylo was designed to abstract the underlying biology away by representing nucleotide bases as colored blocks.  The intuition behind such an abstraction is humans are quite good at visual pattern recognition problems. Using Phylo, humans were indeed able to outperform state of the art MSA algorithms for certain sequences. We'd like to use similar motivation for exploring the idea of humans reconstructing transcript isoforms from relative abundances  of exons. We believe that this problem can effectively be conveyed in a simple block-based puzzle, and therefore a person with no understanding of computation or biology can play but still potentially find useful solutions. Thus, by abstracting the problem of transcript assembly into a simple puzzle form, we can hopefully use human powered computation to help parse RNA-seq data. Due to the overhead of human powered computation, utilizing our game for complete transcriptome assembly would be difficult. However, we envision
-this project being utilized in a similar manner to Phylo, where solutions to complex regions can be explored by humans and compared to those found by the current gold standards.
+this project being utilized in a similar manner to Phylo, where solutions to complex regions can be explored by humans and compared to those found by the current gold standard algorithms.
 
 \subsection*{Approach}
 \subsubsection*{Data preprocessing}
-For our game we intend to use genomic data from the mouse to ease comparison with related work given that most other authors in this area worked with the mouse genome \citep{trapnell2010transcript,guttman2010ab,feng2010inference,li2011isolasso}. Since read alignment and exon detection is outside the scope of this project, we would use the tool TopHat \citep{trapnell2009tophat} to perform these tasks. The input to the game would therefore be expression levels for the different exons and junctions in the mouse genes. \\
+For our game we intend to use genomic data from the mouse to ease comparison with related work given that most other authors in this area worked with the mouse genome \citep{trapnell2010transcript,guttman2010ab,feng2010inference,li2011isolasso}. Since read alignment and exon detection is outside the scope of this project, we are using the tool TopHat \citep{trapnell2009tophat} to perform these tasks. The input to the game is therefore expression levels for the different exons and junctions in the mouse genes. \\
 However, to be able to stratify the game into difficulty levels we would organize the genes by number of exons and amount of disagreement on genes' isoforms using other tools. \\
-After pre-processing the reads with TopHat, we would push exon and junction expression level data to a database for easy retrieval. We chose to use a database since the voluminous read data is not relevant to our problem and therefore not useful to store.
+After pre-processing the reads with TopHat, we will push exon and junction expression level data to a database for easy retrieval. We chose to use a database since the voluminous read data is not relevant to our problem and therefore not useful to store.
 \subsubsection*{Game Development}
 Our game has two major components:
 \begin{enumerate}
@@ -54,9 +54,9 @@ Our game has two major components:
 \label{fig:proposedui}
 \end{figure}
 
-When the game starts, players will be presented with a gene where each column of blocks represent exons discovered by TopHat, and column heights represent their relative abundances. Furthermore, columns will contain ``linked" boxes that contain a unique identifier shared with a box in another column.
-These represent reads that mapped to more than one exon and spanned a splice junction. Players will then be able to copy this entire gene into a transcript, delete exons and vary the relative expression levels of their transcripts in order to remove boxes from the puzzle. ``Linked" boxes can only be removed by
-transcripts that contain both exons corresponding to the ``linked" boxes without the exons in between them.
+When the game starts, players will be presented with a gene where each column of blocks represents exons discovered by TopHat, and column heights represent their relative abundances. Furthermore, columns will contain ``linked" blocks that contain a unique identifier shared with a box in another column.
+These represent reads that mapped to more than one exon and spanned a splice junction. Players will then be able to copy this entire gene into a transcript, delete exons and vary the relative expression levels of their transcripts in order to remove boxes from the puzzle. ``Linked" blocks can only be removed by
+transcripts that contain both exons corresponding to the ``linked" blocks without the exons in between them.
 
 An example puzzle is shown in Figure \ref{fig:proposedui}. Users can toggle exons to create transcripts and then increase or decrease abundance the transcripts they create. Increasing abundance for a transcript
 will remove one block from each exon column included in the transcript in the puzzle. Notice that the first and third column have ``linked" blocks that can only be removed by a transcript that contains the red and blue exon, but not the green exon. 
