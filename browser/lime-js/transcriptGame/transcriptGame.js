@@ -55,10 +55,11 @@ function initGame(numExons, exonCount, gameObj){
     return exonSprites;
 }
 
-// Adds a transcript to the current list and redraws list screen
-function addTranscript(currTranscript, transcriptList, transcriptCount, gameObj, listLayer, exonSprites){
+// Returns idx of a transcript in a list of transcripts, -1 otherwise
+function transcriptIdx(currTranscript, transcriptList){
     // Check to see if transcript already exists
     var exists = false;
+    var idx = -1;
     for (var i=0; i<transcriptList.length && !exists; i++)
     {
         exists = true;
@@ -73,18 +74,15 @@ function addTranscript(currTranscript, transcriptList, transcriptCount, gameObj,
 
         if (exists)
         {
-            transcriptCount[i]++;
+            idx = i;
         }
     }
 
-    // Add transcript to list if new
-    if (!exists)
-    {
-        transcriptList[transcriptList.length] = currTranscript;
-        transcriptCount[transcriptCount.length] = 1;
-    }
+    return idx;
+}
 
-    // Redraw transcript List
+// Redraws transcript list
+function redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites){
     listLayer.removeAllChildren();
     for (var i=0; i<transcriptList.length; i++)
     {
@@ -107,6 +105,39 @@ function addTranscript(currTranscript, transcriptList, transcriptCount, gameObj,
             .setPosition(gameObj.width-30,5+i*(gameObj.listTileSize+gameObj.listTileGap));
         listLayer.appendChild(currLabel);
     }
+}
+
+// Adds a transcript to the current list and redraws list screen
+function addTranscript(currTranscript, transcriptList, transcriptCount){
+
+    // Add transcript to list if new
+    var idx = transcriptIdx(currTranscript,transcriptList);
+    if (idx == -1)
+    {
+        transcriptList[transcriptList.length] = currTranscript;
+        transcriptCount[transcriptCount.length] = 1;
+    }
+    else
+        transcriptCount[idx]++;
+
+}
+
+// Removes transcript from list if it exists and returns true, otherwise returns false
+function removeTranscript(currTranscript,transcriptList,transcriptCount){
+    var idx = transcriptIdx(currTranscript,transcriptList);
+    
+    if (idx == -1)
+        return false;
+        
+    if (transcriptCount[idx] == 1)
+    {
+        transcriptList.splice(idx,1);
+        transcriptCount.splice(idx,1);
+    }
+    else
+        transcriptCount[idx]--;
+
+    return true;
 }
 
 // Add initial row of control sprites
@@ -281,7 +312,8 @@ transcriptGame.start = function(){
                 }
             }
 
-            addTranscript(currTranscript,transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
+            addTranscript(currTranscript,transcriptList,transcriptCount);
+            redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
         }
 
         // TODO: linked logic
@@ -293,6 +325,35 @@ transcriptGame.start = function(){
         .setText('-')
         .setPosition(plusButton.getPosition().x, plusButton.getPosition().y+25);
     controlsLayer.appendChild(minusButton);
+
+    // minus button logic
+    goog.events.listen(minusButton, ['mousedown','touchstart'],function(e){
+        currTranscript = new Array();
+        for (var i=0; i<controlSprites.length; i++)
+        {
+            if (controlSprites[i].getOpacity() == 1)
+                currTranscript[i] = 1;
+            else
+                currTranscript[i] = 0;
+        }
+
+        if (removeTranscript(currTranscript,transcriptList,transcriptCount))
+        {
+            redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
+            
+            // Add blocks back to columns
+            for (var i=0; i<exonIdxs.length; i++)
+            {
+                if (currTranscript[i] == 1)
+                {
+                    exonIdxs[i]++;
+                    exonSprites[i][exonIdxs[i]].setOpacity(1);
+                }
+            }
+        }
+
+        // TODO: linked logic
+    });
 
     // set current scene active
 	director.replaceScene(gameScene);
