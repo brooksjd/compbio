@@ -14,6 +14,9 @@ goog.require('lime.animation.FadeTo');
 goog.require('lime.animation.ScaleTo');
 goog.require('lime.animation.MoveTo');
 goog.require('lime.GlossyButton');
+goog.require('transcript.LinkedBlock');
+
+
 
 // Function to set up puzzle based on puzzle parameters
 function initGame(numExons, exonCount, gameObj){
@@ -53,6 +56,41 @@ function initGame(numExons, exonCount, gameObj){
     }
 
     return exonSprites;
+}
+
+// Redraw linked blocks
+function redrawLinks(junctions,junctionCount,linkedLayer,exonSprites,exonIdxs,gameObj){
+    linkedLayer.removeAllChildren();
+    
+    // current amount of linked blocks in each column - for stacking linked blocks on top of other linked blocks
+    var currLinked = new Array();
+    for (var i=0; i<exonIdxs.length; i++)
+        currLinked[i] = 0;
+
+    for (var i=0; i<junctionCount.length; i++)
+    {
+        if (junctionCount[i] > 0)
+        {
+            for (var j=0; j<junctionCount[i]; j++)
+            {
+                // Put a linked block in both columns that are linked
+                var block1 = new transcript.LinkedBlock().setAnchorPoint(0,0);
+                block1.setSizeL(gameObj.puzzleTileSize,gameObj.puzzleTileSize);
+                block1.setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill());
+                block1.setPositionL(exonSprites[junctions[i][0]][0].getPosition().x, exonSprites[junctions[i][0]][exonIdxs[junctions[i][0]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][0]]*(gameObj.puzzleTileSize+1));
+                currLinked[junctions[i][0]]++;
+
+                var block2 = new transcript.LinkedBlock().setAnchorPoint(0,0).setSizeL(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
+                    .setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill())
+                    .setPositionL(exonSprites[junctions[i][1]][0].getPosition().x, exonSprites[junctions[i][1]][exonIdxs[junctions[i][1]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][1]]*(gameObj.puzzleTileSize+1));
+                currLinked[junctions[i][1]]++;
+
+                linkedLayer.appendChild(block1);
+                linkedLayer.appendChild(block2);
+            }
+        }
+    }
+
 }
 
 // Returns idx of a transcript in a list of transcripts, -1 otherwise
@@ -185,15 +223,34 @@ transcriptGame.start = function(){
     }
 
 
+    // puzzle class
+    var puzzle = new function() {
+        this.numExons = 0;
+        this.exonCount = new Array();
+        // this.exonWidths = new Array();
+        this.junctions = new Array();    // [exon1] [exon2] [junction count]
+
+
+        // Function for recieving puzzle parameters from server
+        // this.getParams () { };
+    }
+
     // Example puzzle (TODO: make puzzle.js object)
-    var numExons = 4;
-    var exonCount = new Array();
-    exonCount[0] = 2;
-    exonCount[1] = 3;
-    exonCount[2] = 3;
-    exonCount[3] = 2;
+    //var numExons = 4;
+    //var exonCount = new Array();
+    //exonCount[0] = 2;
+    //exonCount[1] = 3;
+    //exonCount[2] = 3;
+    //exonCount[3] = 2;
 
-
+    // puzzle.getParams();
+    puzzle.numExons = 4;
+    puzzle.exonCount[0] = 2;
+    puzzle.exonCount[1] = 3;
+    puzzle.exonCount[2] = 3;
+    puzzle.exonCount[3] = 2;
+    puzzle.junctions[0] = new Array(0,2,1);
+    puzzle.junctions[1] = new Array(0,3,2);
 
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
@@ -204,21 +261,23 @@ transcriptGame.start = function(){
     var puzzleLayer = new lime.Layer().setAnchorPoint(0, 0);
     var controlsLayer = new lime.Layer().setAnchorPoint(0, 0);
     var listLayer = new lime.Layer().setAnchorPoint(0,0);
-
+    var linkedLayer = new lime.Layer().setAnchorPoint(0,0);
+   
     gameScene.appendChild(puzzleLayer);
+    gameScene.appendChild(linkedLayer);
     gameScene.appendChild(controlsLayer);
 
     var controlsArea = new lime.Sprite().setAnchorPoint(0, 0);
     controlsArea.setPosition(0,gameObj.height-gameObj.controlsLayerH);
     controlsArea.setSize(gameObj.controlsLayerW,gameObj.controlsLayerH);
     controlsArea.setFill('#333333');
-    controlsArea.setStroke(1,'#FFF000');
+    controlsArea.setStroke(2,'#FFF000');
     controlsLayer.appendChild(controlsArea);
 
     var puzzleArea = new lime.Sprite().setAnchorPoint(0,0)
         .setSize(gameObj.puzzleLayerW,gameObj.puzzleLayerH)
         .setFill('#333333')
-        .setStroke(1,'#FF0000');
+        .setStroke(2,'#FF0000');
     puzzleLayer.appendChild(puzzleArea);
 
 
@@ -226,23 +285,31 @@ transcriptGame.start = function(){
         .setSize(gameObj.listLayerW,gameObj.listLayerH)
         .setFill('#333333')
         .setPosition(gameObj.width-gameObj.listLayerW,0)
-        .setStroke(1,'#00FF00');
+        .setStroke(2,'#00FF00');
     gameScene.appendChild(listArea);
 
     gameScene.appendChild(listLayer);
     // Set up initial puzzle configuration
-    exonSprites = initGame(numExons,exonCount, gameObj);
+    exonSprites = initGame(puzzle.numExons,puzzle.exonCount, gameObj);
+    //exonSprites = initGame(numExons,exonCount, gameObj);
     controlSprites = initControls(exonSprites,gameObj);
     exonIdxs = new Array();
-    for (var i=0; i<numExons; i++)
+
+    // Set up initial count of junctions remaining
+    junctionCount = new Array();
+    for (var i=0; i<puzzle.junctions.length; i++)
+        junctionCount[i] = puzzle.junctions[i][2];
+    
+    for (var i=0; i<puzzle.numExons; i++)
     {
-        for (var j=0; j<exonCount[i]; j++)
+        for (var j=0; j<puzzle.exonCount[i]; j++)
         {
             puzzleLayer.appendChild(exonSprites[i][j]);
         }
         exonIdxs[i] = exonSprites[i].length-1;
         controlsLayer.appendChild(controlSprites[i]);
     }
+    redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
 
     // Add labels for screenshot purposes
     var label1 = new lime.Label().setAnchorPoint(0,0)
