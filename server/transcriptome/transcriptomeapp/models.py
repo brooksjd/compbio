@@ -16,6 +16,7 @@ class Exon(models.Model):
     
 class Read(models.Model):
     readCount = models.IntegerField()
+    exonCount = models.IntegerField()
     exons = models.ManyToManyField(Exon)
     experiment = models.ForeignKey(Experiment)
 
