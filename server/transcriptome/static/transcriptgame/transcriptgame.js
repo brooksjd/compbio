@@ -255,12 +255,11 @@ transcriptGame.start = function(){
 
     // puzzle class
     var puzzle = new function() {
-        
-        this.exonCount = puzzleData.exons;
+        this.numExons = 0;
+        this.exonCount = new Array();
         // this.exonWidths = new Array();
-        this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
-        this.exonWidths = puzzleData.widths;
-        this.numExons = this.exonCount.length;
+        this.junctions = new Array();    // [exon1] [exon2] [junction count]
+        this.exonWidths = new Array();
 
         // Function for recieving puzzle parameters from server
         // this.getParams () { };
@@ -275,15 +274,15 @@ transcriptGame.start = function(){
     //exonCount[3] = 2;
 
     // puzzle.getParams();
-    // puzzle.numExons = 4;
-    // puzzle.exonCount[0] = 2;
-    // puzzle.exonCount[1] = 3;
-    // puzzle.exonCount[2] = 3;
-    // puzzle.exonCount[3] = 2;
-    // puzzle.junctions[0] = new Array(0,2,1);
-    // puzzle.junctions[1] = new Array(0,3,2);
-// 
-    // puzzle.exonWidths = new Array(25,40,30,30);
+    puzzle.numExons = 4;
+    puzzle.exonCount[0] = 2;
+    puzzle.exonCount[1] = 3;
+    puzzle.exonCount[2] = 3;
+    puzzle.exonCount[3] = 2;
+    puzzle.junctions[0] = new Array(0,2,1);
+    puzzle.junctions[1] = new Array(0,3,2);
+
+    puzzle.exonWidths = new Array(25,40,30,30);
 
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);

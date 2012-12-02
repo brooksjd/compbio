@@ -19,7 +19,11 @@ from transcriptome.transcriptomeapp.models import Experiment, Exon, Gene, Read
 logger = logging.getLogger(__name__)
 
 def home(request):
-    pass
+    t = loader.get_template('transcriptGame.html')    
+    c = RequestContext(request, {
+        
+        })
+    return HttpResponse(t.render(c))
 
 def get_puzzle(request):
     puzzle = {}
@@ -79,4 +83,4 @@ def get_puzzle(request):
     puzzle['junctions'] = junction_array
     puzzle['widths'] = width_array
     
-    return HttpResponse(json.dumps(puzzle))
+    return HttpResponse(content=json.dumps(puzzle), content_type="text/html; charset=utf-8")

@@ -30,3 +30,9 @@
 /server/transcriptome/transcriptomeapp/management/commands/debug_loaddata.pyc
 /server/transcriptome/transcriptomeapp/management/commands/view_gene.pyc
 /server/transcriptome/debug_data.bed
+/server/transcriptome/static/lime
+/server/transcriptome/static/closure
+/server/transcriptome/transcriptomeapp/static/lime
+/server/transcriptome/sqlite.db
+/server/transcriptome/top_reads.bed
+/server/transcriptome/transcriptomeapp/static/closure/

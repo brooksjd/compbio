@@ -257,13 +257,14 @@ transcriptGame.start = function(){
     var puzzle = new function() {
         
         this.exonCount = puzzleData.exons;
-        // this.exonWidths = new Array();
         this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
         this.exonWidths = puzzleData.widths;
         this.numExons = this.exonCount.length;
+        
+        if (typeof this.junctions === 'undefined'){
+        	this.junctions = new Array()
+        }
 
-        // Function for recieving puzzle parameters from server
-        // this.getParams () { };
     }
 
     // Example puzzle (TODO: make puzzle.js object)
@@ -284,6 +285,10 @@ transcriptGame.start = function(){
     // puzzle.junctions[1] = new Array(0,3,2);
 // 
     // puzzle.exonWidths = new Array(25,40,30,30);
+    console.log('exons: ' + puzzle.exonCount)
+    console.log('junctions: ' + puzzle.junctions)
+    console.log('widths: ' + puzzle.exonWidths)
+    console.log('numExons: ' + puzzle.numExons)
 
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
