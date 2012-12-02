@@ -33,6 +33,8 @@ function initGame(numExons, exonCount, gameObj){
     var exonSprites = new Array();
     
     colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
+    //colorList = new Array('#B0171F',
+
     coloridx = 0;
 
     // Add blocks by column
@@ -237,7 +239,7 @@ transcriptGame.start = function(){
         this.exonCount = new Array();
         // this.exonWidths = new Array();
         this.junctions = new Array();    // [exon1] [exon2] [junction count]
-
+        this.exonWidths = new Array();
 
         // Function for recieving puzzle parameters from server
         // this.getParams () { };
@@ -360,6 +362,12 @@ transcriptGame.start = function(){
             }
             exonIdxs[i] = exonSprites[i].length-1;
         }
+
+        // Reset linked block counts
+        for (var i=0; i<junctionCount.length; i++)
+            junctionCount[i] = puzzle.junctions[i][2];
+        redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
+
                 
     });
 
