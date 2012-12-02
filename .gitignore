@@ -21,3 +21,12 @@
 /midreport/Proposal.bbl
 /midreport/Proposal.blg
 /midreport/Proposal.dvi
+/server/transcriptome/head_mm9_hydrolysis.bed
+/server/transcriptome/head_re_filtered_transcriptome.gtf
+/server/transcriptome/head_re_filtered_transcriptome2.gtf
+/server/transcriptome/mm9_hydrolysis - Copy.pro
+/server/transcriptome/mm9_hydrolysis.pro
+/server/transcriptome/re_filtered_transcriptome.gtf
+/server/transcriptome/transcriptomeapp/management/commands/debug_loaddata.pyc
+/server/transcriptome/transcriptomeapp/management/commands/view_gene.pyc
+/server/transcriptome/debug_data.bed

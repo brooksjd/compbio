@@ -17,6 +17,7 @@ class Command(BaseCommand):
             
             exons = Exon.objects.filter(gene=gene)
             for i, exon in enumerate(exons):
+                main_read = 0
                 reads = Read.objects.filter(experiment=experiment).filter(exons__id=exon.id).all()
                 junctions = []
                 for read in reads:
