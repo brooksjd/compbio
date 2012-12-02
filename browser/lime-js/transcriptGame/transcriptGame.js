@@ -77,12 +77,20 @@ function redrawLinks(junctions,junctionCount,linkedLayer,exonSprites,exonIdxs,ga
                 var block1 = new transcript.LinkedBlock().setAnchorPoint(0,0);
                 block1.setSizeL(gameObj.puzzleTileSize,gameObj.puzzleTileSize);
                 block1.setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill());
-                block1.setPositionL(exonSprites[junctions[i][0]][0].getPosition().x, exonSprites[junctions[i][0]][exonIdxs[junctions[i][0]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][0]]*(gameObj.puzzleTileSize+1));
+                if (exonIdxs[junctions[i][0]] >= 0)
+                    block1.setPositionL(exonSprites[junctions[i][0]][0].getPosition().x, exonSprites[junctions[i][0]][exonIdxs[junctions[i][0]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][0]]*(gameObj.puzzleTileSize+1));
+                else
+                    block1.setPositionL(exonSprites[junctions[i][0]][0].getPosition().x, gameObj.puzzleLayerH-40-currLinked[junctions[i][0]]*(gameObj.puzzleTileSize+1));
+                   
                 currLinked[junctions[i][0]]++;
 
                 var block2 = new transcript.LinkedBlock().setAnchorPoint(0,0).setSizeL(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
-                    .setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill())
-                    .setPositionL(exonSprites[junctions[i][1]][0].getPosition().x, exonSprites[junctions[i][1]][exonIdxs[junctions[i][1]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][1]]*(gameObj.puzzleTileSize+1));
+                    .setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill());
+                if (exonIdxs[junctions[i][1]] >= 0)
+                    block2.setPositionL(exonSprites[junctions[i][1]][0].getPosition().x, exonSprites[junctions[i][1]][exonIdxs[junctions[i][1]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][1]]*(gameObj.puzzleTileSize+1));
+                else
+                    block2.setPositionL(exonSprites[junctions[i][1]][0].getPosition().x, gameObj.puzzleLayerH-40-currLinked[junctions[i][1]]*(gameObj.puzzleTileSize+1));
+
                 currLinked[junctions[i][1]]++;
 
                 linkedLayer.appendChild(block1);
@@ -364,13 +372,41 @@ transcriptGame.start = function(){
 
     // plus button logic
     goog.events.listen(plusButton, ['mousedown','touchstart'],function(e){
-        currTranscript = new Array();
+        var currTranscript = new Array();
+        var currLinks = new Array();
+        var junctionsAffected = new Array();
         for (var i=0; i<controlSprites.length; i++)
         {
             if (controlSprites[i].getOpacity() == 1)
                 currTranscript[i] = 1;
             else
                 currTranscript[i] = 0;
+            currLinks[i] = 0;
+        }
+
+        // First check ability to remove linked exon
+        for (var i=0; i<puzzle.junctions.length; i++)
+        {
+            junctionsAffected[i] = 0;
+            if (currTranscript[puzzle.junctions[i][0]] == 1 && currTranscript[puzzle.junctions[i][1]] == 1 && junctionCount[i] > 0)
+            {
+                var unset = true;
+                // Check to make sure there are no exons selected in between
+                for (var j=puzzle.junctions[i][0]+1; j<puzzle.junctions[i][1]; j++)
+                {
+                    if (currTranscript[j] == 1)
+                        unset = false;
+                }
+
+                // If valid link to remove, check to see if other set exons are valid
+                if (unset)
+                {
+                    currLinks[puzzle.junctions[i][0]] = 1;
+                    currLinks[puzzle.junctions[i][1]] = 1;
+                    junctionsAffected[i] = 1;
+                }
+
+            }
         }
 
         // Check exon availiblity
@@ -378,7 +414,7 @@ transcriptGame.start = function(){
         var allempty = true;
         for (var i=0; i<exonIdxs.length; i++)
         {
-            if (currTranscript[i] == 1 && exonIdxs[i] < 0)
+            if (currTranscript[i] == 1 && exonIdxs[i] < 0 && currLinks[i] == 0)
             {
                 valid = false;
                 break;
@@ -388,18 +424,25 @@ transcriptGame.start = function(){
         }
         if (valid && !allempty)
         {
-            
             for (var i=0; i<exonIdxs.length; i++)
             {
-                if (currTranscript[i] == 1)
+                // Removing normal exon
+                if (currTranscript[i] == 1 && currLinks[i] == 0)
                 {
                     exonSprites[i][exonIdxs[i]].setOpacity(0);
                     exonIdxs[i] = exonIdxs[i]-1;
                 }
             }
 
+            for (var i=0; i<junctionsAffected.length; i++)
+            {
+                if (junctionsAffected[i] == 1)
+                    junctionCount[i]--;
+            }
+
             addTranscript(currTranscript,transcriptList,transcriptCount);
             redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
+            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
         }
 
         // TODO: linked logic
