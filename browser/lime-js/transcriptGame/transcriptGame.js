@@ -41,8 +41,12 @@ function initGame(numExons, exonCount, gameObj, exonWidths){
     var exonSprites = new Array();
     
     // TODO: add lots more and better colors
-    colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
-    //colorList = new Array('#B0171F',
+    //colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
+
+    // Kelly's max contrast set
+    // http://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
+    colorList = new Array('#FFB300','#803E75','#FF6800','#A6BDD7','#C10020','#CEA262','#817066','#007D34','#F6768E','#00538A','#FF7A5C',
+        '#53377A','#FF8E00','#B32851','#F4C800','#7F180D','#93AA00','#593315','#F13A13','#232C16');
 
     coloridx = 0;
 
@@ -292,13 +296,13 @@ transcriptGame.start = function(){
     controlsArea.setPosition(0,gameObj.height-gameObj.controlsLayerH);
     controlsArea.setSize(gameObj.controlsLayerW,gameObj.controlsLayerH);
     controlsArea.setFill('#333333');
-    controlsArea.setStroke(2,'#FFF000');
+    controlsArea.setStroke(2,255,255,0);
     controlsLayer.appendChild(controlsArea);
 
     var puzzleArea = new lime.Sprite().setAnchorPoint(0,0)
         .setSize(gameObj.puzzleLayerW,gameObj.puzzleLayerH)
         .setFill('#333333')
-        .setStroke(2,'#FF0000');
+        .setStroke(2,255,0,16);
     puzzleLayer.appendChild(puzzleArea);
 
 
@@ -306,7 +310,7 @@ transcriptGame.start = function(){
         .setSize(gameObj.listLayerW,gameObj.listLayerH)
         .setFill('#333333')
         .setPosition(gameObj.width-gameObj.listLayerW,0)
-        .setStroke(2,'#00FF00');
+        .setStroke(2,43,206,72);
     gameScene.appendChild(listArea);
 
     gameScene.appendChild(listLayer);
