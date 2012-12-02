@@ -33,6 +33,8 @@ function initGame(numExons, exonCount, gameObj){
     var exonSprites = new Array();
     
     colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
+    //colorList = new Array('#B0171F',
+
     coloridx = 0;
 
     // Add blocks by column
@@ -237,7 +239,7 @@ transcriptGame.start = function(){
         this.exonCount = new Array();
         // this.exonWidths = new Array();
         this.junctions = new Array();    // [exon1] [exon2] [junction count]
-
+        this.exonWidths = new Array();
 
         // Function for recieving puzzle parameters from server
         // this.getParams () { };
@@ -360,6 +362,12 @@ transcriptGame.start = function(){
             }
             exonIdxs[i] = exonSprites[i].length-1;
         }
+
+        // Reset linked block counts
+        for (var i=0; i<junctionCount.length; i++)
+            junctionCount[i] = puzzle.junctions[i][2];
+        redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
+
                 
     });
 
@@ -398,7 +406,7 @@ transcriptGame.start = function(){
                         unset = false;
                 }
 
-                // If valid link to remove, check to see if other set exons are valid
+                // If valid link to remove, mark position as viable for junction
                 if (unset)
                 {
                     currLinks[puzzle.junctions[i][0]] = 1;
@@ -445,7 +453,6 @@ transcriptGame.start = function(){
             redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
         }
 
-        // TODO: linked logic
     });
 
     var minusButton = new lime.GlossyButton().setAnchorPoint(0,0)
@@ -457,31 +464,65 @@ transcriptGame.start = function(){
 
     // minus button logic
     goog.events.listen(minusButton, ['mousedown','touchstart'],function(e){
-        currTranscript = new Array();
+        var currTranscript = new Array();
+        var currLinks = new Array();
+        var junctionsAffected = new Array();
         for (var i=0; i<controlSprites.length; i++)
         {
             if (controlSprites[i].getOpacity() == 1)
                 currTranscript[i] = 1;
             else
                 currTranscript[i] = 0;
+            currLinks[i] = 0;
         }
 
         if (removeTranscript(currTranscript,transcriptList,transcriptCount))
         {
             redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
-            
+        
+            // Check if removed transcript qualifies for linked blocks
+            for (i = 0; i<puzzle.junctions.length; i++)
+            {
+                junctionsAffected[i] = 0;
+                if (currTranscript[puzzle.junctions[i][0]] == 1 && currTranscript[puzzle.junctions[i][1]] == 1 && junctionCount[i] < puzzle.junctions[i][2])
+                {
+                    var unset = true;
+                    // Check to make sure there are no exons selected in between
+                    for (var j=puzzle.junctions[i][0]+1; j<puzzle.junctions[i][1]; j++)
+                    {
+                        if (currTranscript[j] == 1)
+                            unset = false;
+                    }
+
+                    if (unset)
+                    {
+                        currLinks[puzzle.junctions[i][0]] = 1;
+                        currLinks[puzzle.junctions[i][1]] = 1;
+                        junctionsAffected[i] = 1;
+                    }
+                }
+            }
+
             // Add blocks back to columns
             for (var i=0; i<exonIdxs.length; i++)
             {
-                if (currTranscript[i] == 1)
+                if (currTranscript[i] == 1 && currLinks[i] == 0)
                 {
                     exonIdxs[i]++;
                     exonSprites[i][exonIdxs[i]].setOpacity(1);
                 }
             }
+
+            // Add back valid linked blocks
+            for (var i=0; i<junctionsAffected.length; i++)
+            {
+                if (junctionsAffected[i] == 1)
+                    junctionCount[i]++;
+            }
+
+            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
         }
 
-        // TODO: linked logic
     });
 
     // set current scene active
