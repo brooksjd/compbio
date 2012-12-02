@@ -19,10 +19,15 @@ goog.require('transcript.LinkedBlock');
 
 
 // Function to set up puzzle based on puzzle parameters
-function initGame(numExons, exonCount, gameObj){
+function initGame(numExons, exonCount, gameObj, exonWidths){
+
+    var totalWidth = 0;
+    for (var i=0; i<numExons; i++)
+        totalWidth += exonWidths[i];
+    totalWidth += gameObj.puzzleTileGap*(numExons-1);
 
     // Calculate where exon blocks will start
-    if (numExons % 2 == 0)
+    /*if (numExons % 2 == 0)
     {
         var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*(numExons/2);
     }
@@ -30,8 +35,12 @@ function initGame(numExons, exonCount, gameObj){
     {
         var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*((numExons-1)/2)-gameObj.puzzleTileSize/2;
     }
+    */
+    blockStart = gameObj.puzzleLayerW/2-totalWidth/2;
+
     var exonSprites = new Array();
     
+    // TODO: add lots more and better colors
     colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
     //colorList = new Array('#B0171F',
 
@@ -44,7 +53,7 @@ function initGame(numExons, exonCount, gameObj){
         for (var j=0; j<exonCount[i]; j++)
         {
             exonSprites[i][j] = new lime.Sprite().setAnchorPoint(0,0)
-                .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
+                .setSize(exonWidths[i],gameObj.puzzleTileSize)
                 .setPosition(blockStart, gameObj.puzzleLayerH-40-j*(gameObj.puzzleTileSize+1))
                 .setFill(colorList[coloridx]);
             //puzzleLayer.appendChild(exonSprites[i][j]);
@@ -54,14 +63,14 @@ function initGame(numExons, exonCount, gameObj){
         if (coloridx == colorList.length)
             coloridx = 0;
 
-        blockStart += gameObj.puzzleTileSize+gameObj.puzzleTileGap;
+        blockStart += exonWidths[i]+gameObj.puzzleTileGap;
     }
 
     return exonSprites;
 }
 
 // Redraw linked blocks
-function redrawLinks(junctions,junctionCount,linkedLayer,exonSprites,exonIdxs,gameObj){
+function redrawLinks(junctions,junctionCount,linkedLayer,exonSprites,exonIdxs,gameObj,exonWidths){
     linkedLayer.removeAllChildren();
     
     // current amount of linked blocks in each column - for stacking linked blocks on top of other linked blocks
@@ -77,7 +86,7 @@ function redrawLinks(junctions,junctionCount,linkedLayer,exonSprites,exonIdxs,ga
             {
                 // Put a linked block in both columns that are linked
                 var block1 = new transcript.LinkedBlock().setAnchorPoint(0,0);
-                block1.setSizeL(gameObj.puzzleTileSize,gameObj.puzzleTileSize);
+                block1.setSizeL(exonWidths[junctions[i][0]],gameObj.puzzleTileSize);
                 block1.setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill());
                 if (exonIdxs[junctions[i][0]] >= 0)
                     block1.setPositionL(exonSprites[junctions[i][0]][0].getPosition().x, exonSprites[junctions[i][0]][exonIdxs[junctions[i][0]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][0]]*(gameObj.puzzleTileSize+1));
@@ -86,7 +95,7 @@ function redrawLinks(junctions,junctionCount,linkedLayer,exonSprites,exonIdxs,ga
                    
                 currLinked[junctions[i][0]]++;
 
-                var block2 = new transcript.LinkedBlock().setAnchorPoint(0,0).setSizeL(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
+                var block2 = new transcript.LinkedBlock().setAnchorPoint(0,0).setSizeL(exonWidths[junctions[i][1]],gameObj.puzzleTileSize)
                     .setFillL(exonSprites[junctions[i][0]][0].getFill(), exonSprites[junctions[i][1]][0].getFill());
                 if (exonIdxs[junctions[i][1]] >= 0)
                     block2.setPositionL(exonSprites[junctions[i][1]][0].getPosition().x, exonSprites[junctions[i][1]][exonIdxs[junctions[i][1]]].getPosition().y-(gameObj.puzzleTileSize+1)-currLinked[junctions[i][1]]*(gameObj.puzzleTileSize+1));
@@ -189,12 +198,12 @@ function removeTranscript(currTranscript,transcriptList,transcriptCount){
 }
 
 // Add initial row of control sprites
-function initControls(exonSprites,gameObj){
+function initControls(exonSprites,gameObj,exonWidths){
     controlSprites = new Array();
-    for (var i=0; i<4; i++)
+    for (var i=0; i<exonSprites.length; i++)
     {
         controlSprites[i] = new lime.Sprite().setAnchorPoint(0,0)
-            .setSize(gameObj.puzzleTileSize,gameObj.puzzleTileSize)
+            .setSize(exonWidths[i],gameObj.puzzleTileSize)
             .setPosition(exonSprites[i][0].getPosition().x, gameObj.puzzleLayerH+gameObj.controlsLayerH/2-gameObj.puzzleTileSize/2)
             .setFill(exonSprites[i][0].getFill())
             .setOpacity(.1);
@@ -262,6 +271,8 @@ transcriptGame.start = function(){
     puzzle.junctions[0] = new Array(0,2,1);
     puzzle.junctions[1] = new Array(0,3,2);
 
+    puzzle.exonWidths = new Array(25,40,30,30);
+
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
     director.makeMobileWebAppCapable();    
@@ -300,9 +311,9 @@ transcriptGame.start = function(){
 
     gameScene.appendChild(listLayer);
     // Set up initial puzzle configuration
-    exonSprites = initGame(puzzle.numExons,puzzle.exonCount, gameObj);
+    exonSprites = initGame(puzzle.numExons,puzzle.exonCount, gameObj, puzzle.exonWidths);
     //exonSprites = initGame(numExons,exonCount, gameObj);
-    controlSprites = initControls(exonSprites,gameObj);
+    controlSprites = initControls(exonSprites,gameObj,puzzle.exonWidths);
     exonIdxs = new Array();
 
     // Set up initial count of junctions remaining
@@ -319,7 +330,7 @@ transcriptGame.start = function(){
         exonIdxs[i] = exonSprites[i].length-1;
         controlsLayer.appendChild(controlSprites[i]);
     }
-    redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
+    redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
 
     // Add labels for screenshot purposes
     var label1 = new lime.Label().setAnchorPoint(0,0)
@@ -343,7 +354,7 @@ transcriptGame.start = function(){
         .setSize(80,40)
         .setColor('#E3E3E3')
         .setText('Reset')
-        .setPosition(controlSprites[0].getPosition().x-gameObj.puzzleTileSize-50, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
+        .setPosition(controlSprites[0].getPosition().x-puzzle.exonWidths[0]-50, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
     controlsLayer.appendChild(resetButton);
 
     // reset button logic
@@ -366,7 +377,7 @@ transcriptGame.start = function(){
         // Reset linked block counts
         for (var i=0; i<junctionCount.length; i++)
             junctionCount[i] = puzzle.junctions[i][2];
-        redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
+        redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
 
                 
     });
@@ -375,7 +386,7 @@ transcriptGame.start = function(){
         .setSize(15,15)
         .setColor('#E3E3E3')
         .setText('+')
-        .setPosition(controlSprites[controlSprites.length-1].getPosition().x+gameObj.puzzleTileSize+25,controlSprites[controlSprites.length-1].getPosition().y);
+        .setPosition(controlSprites[controlSprites.length-1].getPosition().x+puzzle.exonWidths[puzzle.exonWidths.length-1]+25,controlSprites[controlSprites.length-1].getPosition().y);
     controlsLayer.appendChild(plusButton);
 
     // plus button logic
@@ -450,7 +461,7 @@ transcriptGame.start = function(){
 
             addTranscript(currTranscript,transcriptList,transcriptCount);
             redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
-            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
+            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
         }
 
     });
@@ -520,7 +531,7 @@ transcriptGame.start = function(){
                     junctionCount[i]++;
             }
 
-            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj);
+            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
         }
 
     });
