@@ -17,7 +17,6 @@ goog.require('lime.GlossyButton');
 goog.require('transcript.LinkedBlock');
 
 
-
 // Function to set up puzzle based on puzzle parameters
 function initGame(numExons, exonCount, gameObj, exonWidths){
 
@@ -247,6 +246,7 @@ transcriptGame.getPuzzle = function(){
 	});
 }
 
+
 transcriptGame.start = function(){
 
     // Object containing game parameters
@@ -267,6 +267,9 @@ transcriptGame.start = function(){
         puzzleTileSize: 30,
         puzzleTileGap: 15,
     
+        puzzleTileMaxW: 60,
+        puzzleTileMinW: 10,
+
         listTileSize: 10,
         listTileGap: 5
     }
@@ -278,7 +281,7 @@ transcriptGame.start = function(){
         //this.exonCount = puzzleData.exons;
         // this.exonWidths = new Array();
         //this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
-        //this.exonWidths = puzzleData.widths;
+        this.exonWidths = puzzleData.widths;
         //this.numExons = this.exonCount.length;
 
         this.numExons = 0;
@@ -292,7 +295,19 @@ transcriptGame.start = function(){
     }
 
     //puzzle.getParams();
-    
+   
+    // Normalize exon widths by number of bases
+    // Find median exon width
+    sortVals = puzzle.exonWidths.sort(function(a,b) {return a-b;});
+    var halfidx = Math.floor(sortVals.length/2);
+    var median = 0;
+    if (values.length % 2)
+        median = sortVals[halfidx];
+    else
+        median = (sortVals[halfidx-1]+sortVals[halfidx])/2.0;
+
+    // Scale widths by ratio of 
+              
     
     puzzle.numExons = 4;
     puzzle.exonCount[0] = 0;
@@ -316,9 +331,6 @@ transcriptGame.start = function(){
     var linkedLayer = new lime.Layer().setAnchorPoint(0,0);
     var scoreLayer = new lime.Layer().setAnchorPoint(0,0);
 
-    gameScene.appendChild(puzzleLayer);
-    gameScene.appendChild(linkedLayer);
-    gameScene.appendChild(controlsLayer);
     gameScene.appendChild(scoreLayer);
 
     var controlsArea = new lime.Sprite().setAnchorPoint(0, 0);
@@ -326,14 +338,16 @@ transcriptGame.start = function(){
     controlsArea.setSize(gameObj.controlsLayerW,gameObj.controlsLayerH);
     controlsArea.setFill('#333333');
     controlsArea.setStroke(2,255,255,0);
-    controlsLayer.appendChild(controlsArea);
+    gameScene.appendChild(controlsArea);
+    gameScene.appendChild(controlsLayer);
 
     var puzzleArea = new lime.Sprite().setAnchorPoint(0,0)
         .setSize(gameObj.puzzleLayerW,gameObj.puzzleLayerH)
         .setFill('#333333')
         .setStroke(2,255,0,16);
-    puzzleLayer.appendChild(puzzleArea);
-
+    gameScene.appendChild(puzzleArea);
+    gameScene.appendChild(puzzleLayer);
+    gameScene.appendChild(linkedLayer);
 
     var listArea = new lime.Sprite().setAnchorPoint(0,0)
         .setSize(gameObj.listLayerW,gameObj.listLayerH)
@@ -382,6 +396,98 @@ transcriptGame.start = function(){
     transcriptList = new Array();
     transcriptCount = new Array();
 
+
+    // Score labels
+    var scoreTitle = new lime.Label().setAnchorPoint(0,0)
+        .setFontSize(25)
+        .setFontColor('#C10020')
+        .setText("Score:")
+        .setOpacity(0)
+        .setPosition(scoreArea.getPosition().x+20,scoreArea.getPosition().y+20);
+    scoreLayer.appendChild(scoreTitle);
+
+    var scoreValue = new lime.Label().setAnchorPoint(0,0)
+        .setFontSize(40)
+        .setFontColor('#C10020')
+        .setText("0")
+        .setOpacity(0)
+        .setPosition(scoreTitle.getPosition().x+25,scoreTitle.getPosition().y+40);
+    scoreLayer.appendChild(scoreValue);
+
+    // Next puzzle button
+    var nextButton = new lime.GlossyButton().setAnchorPoint(0,0)
+        .setSize(80,40)
+        .setColor('#E3E3E3')
+        .setText('Next')
+        .setOpacity(0)
+        .setPosition(scoreArea.getPosition().x+scoreArea.getSize().width/2+40,scoreArea.getPosition().y+scoreArea.getSize().height/2);
+    scoreLayer.appendChild(nextButton);
+   
+    // Next button logic
+    goog.events.listen(nextButton, ['mousedown','touchstart'],function(e){
+        // Only load next puzzle if next button is visible
+        if (this.getOpacity() == 1)
+        {
+            transcriptGame.getPuzzle();
+            
+            goog.events.removeAll();
+            /*
+            // sendScore()
+
+            // puzzle.getParams();
+
+            puzzle.numExons = 3;
+            puzzle.exonCount = new Array();
+            puzzle.exonCount[0] = 1;
+            puzzle.exonCount[1] = 2;
+            puzzle.exonCount[2] = 0;
+
+            puzzle.junctions = new Array();
+            puzzle.junctions[0] = new Array(0,2,1);
+
+            puzzleLayer.removeAllChildren();
+            controlsLayer.removeAllChildren();
+            listLayer.removeAllChildren();
+
+            exonSprites = initGame(puzzle.numExons,puzzle.exonCount, gameObj, puzzle.exonWidths);
+            controlSprites = initControls(exonSprites,gameObj,puzzle.exonWidths);
+
+            // Set up initial count of junctions remaining
+            junctionCount = new Array();
+            for (var i=0; i<puzzle.junctions.length; i++)
+                junctionCount[i] = puzzle.junctions[i][2];
+    
+            exonIdxs = new Array();
+            for (var i=0; i<puzzle.numExons; i++)
+            {
+                for (var j=0; j<puzzle.exonCount[i]; j++)
+                {
+                    puzzleLayer.appendChild(exonSprites[i][j]);
+                }
+
+                // Resolve hack
+                if (exonSprites[i][0].getOpacity() == 0)
+                    exonIdxs[i] = -1;
+                else
+                    exonIdxs[i] = exonSprites[i].length-1;
+                controlsLayer.appendChild(controlSprites[i]);
+            }
+            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
+    
+            transcriptList = new Array();
+            transcriptCount = new Array();
+        
+            controlsLayer.appendChild(resetButton);
+            controlsLayer.appendChild(plusButton);
+            controlsLayer.appendChild(minusButton);
+            
+            scoreTitle.setOpacity(0);
+            scoreValue.setOpacity(0);
+            this.setOpacity(0);
+            */
+        }
+    });
+    
     // Control buttons
     var resetButton = new lime.GlossyButton().setAnchorPoint(0,0)
         .setSize(80,40)
@@ -389,9 +495,13 @@ transcriptGame.start = function(){
         .setText('Reset')
         .setPosition(controlSprites[0].getPosition().x-puzzle.exonWidths[0]-50, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
     controlsLayer.appendChild(resetButton);
-
+    
     // reset button logic
     goog.events.listen(resetButton, ['mousedown','touchstart'],function(e){
+        scoreTitle.setOpacity(0);
+        scoreValue.setOpacity(0);
+        nextButton.setOpacity(0);
+        
         // Clear transcript lists
         transcriptList = [];
         transcriptCount = [];
@@ -430,31 +540,6 @@ transcriptGame.start = function(){
         .setPosition(controlSprites[controlSprites.length-1].getPosition().x+puzzle.exonWidths[puzzle.exonWidths.length-1]+25,controlSprites[controlSprites.length-1].getPosition().y);
     controlsLayer.appendChild(plusButton);
 
-    // Score labels
-    var scoreTitle = new lime.Label().setAnchorPoint(0,0)
-        .setFontSize(25)
-        .setFontColor('#C10020')
-        .setText("Score:")
-        .setOpacity(0)
-        .setPosition(scoreArea.getPosition().x+20,scoreArea.getPosition().y+20);
-    scoreLayer.appendChild(scoreTitle);
-
-    var scoreValue = new lime.Label().setAnchorPoint(0,0)
-        .setFontSize(40)
-        .setFontColor('#C10020')
-        .setText("0")
-        .setOpacity(0)
-        .setPosition(scoreTitle.getPosition().x+25,scoreTitle.getPosition().y+40);
-    scoreLayer.appendChild(scoreValue);
-
-    // Next puzzle button
-    var nextButton = new lime.GlossyButton().setAnchorPoint(0,0)
-        .setSize(80,40)
-        .setColor('#E3E3E3')
-        .setText('Next')
-        .setOpacity(0)
-        .setPosition(scoreArea.getPosition().x+scoreArea.getSize().width/2+40,scoreArea.getPosition().y+scoreArea.getSize().height/2);
-    scoreLayer.appendChild(nextButton);
     
     // plus button logic
     goog.events.listen(plusButton, ['mousedown','touchstart'],function(e){
@@ -579,6 +664,10 @@ transcriptGame.start = function(){
 
         if (removeTranscript(currTranscript,transcriptList,transcriptCount))
         {
+            scoreTitle.setOpacity(0);
+            scoreValue.setOpacity(0);
+            nextButton.setOpacity(0);
+
             redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites);
         
             // Check if removed transcript qualifies for linked blocks
