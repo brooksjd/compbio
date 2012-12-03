@@ -39,3 +39,13 @@ class Transcript(models.Model):
     result = models.ForeignKey(Result)
     expression = models.FloatField()
     exons = models.ManyToManyField(Exon)
+    
+class Truth(models.Model):
+    gene = models.ForeignKey(Gene)
+    experiment = models.ForeignKey(Experiment)
+    
+class TruthTranscript(models.Model):
+    truth = models.ForeignKey(Truth)
+    expression = models.FloatField()
+    exons = models.ManyToManyField(Exon)
+    exonCount = models.IntegerField()
