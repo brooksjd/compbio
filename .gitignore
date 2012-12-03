@@ -36,3 +36,7 @@
 /server/transcriptome/sqlite.db
 /server/transcriptome/top_reads.bed
 /server/transcriptome/transcriptomeapp/static/closure/
+/utilities/head_mm9_hydrolysis.bed
+/utilities/mm9_hydrolysis.bed
+/utilities/mm9_hydrolysis.pro
+/utilities/re_filtered_transcriptome.gtf

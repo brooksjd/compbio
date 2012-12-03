@@ -29,6 +29,7 @@ def get_puzzle(request):
     puzzle = {}
     t_puzzle = {}    
     read_length = 75
+    junction_norm = read_length * 2
     
     two_exon_junction_puzzle = False
     while not two_exon_junction_puzzle:
@@ -104,7 +105,7 @@ def get_puzzle(request):
                             break
                         
                         t_junction_width = read.readCount
-                        junction_width = float(read.readCount)/read_length
+                        junction_width = float(read.readCount)/junction_norm
                         
                         smallest_length = min(smallest_length, junction_width)
                         junctions.append(junction_width)
