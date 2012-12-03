@@ -166,7 +166,7 @@ function redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites
                 .setFill(exonSprites[j][0].getFill())
                 .setPosition(gameObj.puzzleLayerW+j*(gameObj.listTileSize+gameObj.listTileGap)+5, 5+i*(gameObj.listTileSize+gameObj.listTileGap));
             if (transcriptList[i][j] == 0)
-                currBlock.setOpacity(.1);
+                currBlock.setOpacity(.25);
             listLayer.appendChild(currBlock);
         }
 
@@ -221,13 +221,13 @@ function initControls(exonSprites,gameObj,exonWidths){
             .setSize(exonWidths[i],gameObj.puzzleTileSize)
             .setPosition(exonSprites[i][0].getPosition().x, gameObj.puzzleLayerH+gameObj.controlsLayerH/2-gameObj.puzzleTileSize/2)
             .setFill(exonSprites[i][0].getFill())
-            .setOpacity(.1);
+            .setOpacity(.25);
 
         goog.events.listen(controlSprites[i],goog.events.EventType.CLICK,function(e){
-            if (this.getOpacity() == .1)
+            if (this.getOpacity() == .25)
                 this.setOpacity(1);
             else
-                this.setOpacity(.1);
+                this.setOpacity(.25);
         });
     }
 
@@ -264,10 +264,10 @@ transcriptGame.start = function(){
         scoreLayerW: 256,
         scoreLayerH: 128,
 
-        puzzleTileSize: 30,
-        puzzleTileGap: 15,
+        puzzleTileSize: 15,
+        puzzleTileGap: 10,
     
-        puzzleTileMaxW: 60,
+        puzzleTileMaxW: 50,
         puzzleTileMinW: 10,
 
         listTileSize: 10,
@@ -278,16 +278,16 @@ transcriptGame.start = function(){
     // puzzle class
     var puzzle = new function() {
         
-        //this.exonCount = puzzleData.exons;
+        this.exonCount = puzzleData.exons;
         // this.exonWidths = new Array();
-        //this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
+        this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
         this.exonWidths = puzzleData.widths;
-        //this.numExons = this.exonCount.length;
+        this.numExons = this.exonCount.length;
 
-        this.numExons = 0;
+        //this.numExons = 0;
         //this.exonWidths = new Array();
-        this.junctions = new Array();
-        this.exonCount = new Array();
+        //this.junctions = new Array();
+        //this.exonCount = new Array();
 
 
         // Function for recieving puzzle parameters from server
@@ -317,9 +317,25 @@ transcriptGame.start = function(){
         else if (newWidths[i] < gameObj.puzzleTileMinW)
             newWidths[i] = gameObj.puzzleTileMinW;
     }
+   
+    // Ensure sum of widths does not exceed the max possible
+    var sumwidth = 0;
+    for (var i=0; i<newWidths.length; i++)
+        sumwidth += newWidths[i];
+    sumwidth += (newWidths.length-1)*gameObj.puzzleTileGap;
+
+    // If widths are too large, scale back all widths equally
+    if (sumwidth > gameObj.puzzleLayerW-80-80-40)
+    {
+        var ratio = (gameObj.puzzleLayerW*1.0-80-80-40)/sumwidth;
+        for (var i=0; i<newWidths.length; i++)
+            newWidths[i] = Math.floor(newWidths[i]*ratio);
+    }
     
     puzzle.exonWidths = newWidths;
+   
     
+    /*
     puzzle.numExons = 4;
     puzzle.exonCount[0] = 0;
     puzzle.exonCount[1] = 3;
@@ -329,6 +345,7 @@ transcriptGame.start = function(){
     puzzle.junctions[1] = new Array(0,3,2);
 // // 
     puzzle.exonWidths = new Array(25,40,30,30);
+    */
 
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
@@ -442,60 +459,6 @@ transcriptGame.start = function(){
             transcriptGame.getPuzzle();
             
             goog.events.removeAll();
-            /*
-            // sendScore()
-
-            // puzzle.getParams();
-
-            puzzle.numExons = 3;
-            puzzle.exonCount = new Array();
-            puzzle.exonCount[0] = 1;
-            puzzle.exonCount[1] = 2;
-            puzzle.exonCount[2] = 0;
-
-            puzzle.junctions = new Array();
-            puzzle.junctions[0] = new Array(0,2,1);
-
-            puzzleLayer.removeAllChildren();
-            controlsLayer.removeAllChildren();
-            listLayer.removeAllChildren();
-
-            exonSprites = initGame(puzzle.numExons,puzzle.exonCount, gameObj, puzzle.exonWidths);
-            controlSprites = initControls(exonSprites,gameObj,puzzle.exonWidths);
-
-            // Set up initial count of junctions remaining
-            junctionCount = new Array();
-            for (var i=0; i<puzzle.junctions.length; i++)
-                junctionCount[i] = puzzle.junctions[i][2];
-    
-            exonIdxs = new Array();
-            for (var i=0; i<puzzle.numExons; i++)
-            {
-                for (var j=0; j<puzzle.exonCount[i]; j++)
-                {
-                    puzzleLayer.appendChild(exonSprites[i][j]);
-                }
-
-                // Resolve hack
-                if (exonSprites[i][0].getOpacity() == 0)
-                    exonIdxs[i] = -1;
-                else
-                    exonIdxs[i] = exonSprites[i].length-1;
-                controlsLayer.appendChild(controlSprites[i]);
-            }
-            redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
-    
-            transcriptList = new Array();
-            transcriptCount = new Array();
-        
-            controlsLayer.appendChild(resetButton);
-            controlsLayer.appendChild(plusButton);
-            controlsLayer.appendChild(minusButton);
-            
-            scoreTitle.setOpacity(0);
-            scoreValue.setOpacity(0);
-            this.setOpacity(0);
-            */
         }
     });
     
@@ -504,7 +467,7 @@ transcriptGame.start = function(){
         .setSize(80,40)
         .setColor('#E3E3E3')
         .setText('Reset')
-        .setPosition(controlSprites[0].getPosition().x-puzzle.exonWidths[0]-50, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
+        .setPosition(controlSprites[0].getPosition().x-55, controlSprites[0].getPosition().y+gameObj.puzzleTileSize/2);
     controlsLayer.appendChild(resetButton);
     
     // reset button logic
@@ -548,7 +511,7 @@ transcriptGame.start = function(){
         .setSize(15,15)
         .setColor('#E3E3E3')
         .setText('+')
-        .setPosition(controlSprites[controlSprites.length-1].getPosition().x+puzzle.exonWidths[puzzle.exonWidths.length-1]+25,controlSprites[controlSprites.length-1].getPosition().y);
+        .setPosition(controlSprites[controlSprites.length-1].getPosition().x+puzzle.exonWidths[puzzle.exonWidths.length-1]+20,controlSprites[controlSprites.length-1].getPosition().y-6);
     controlsLayer.appendChild(plusButton);
 
     
