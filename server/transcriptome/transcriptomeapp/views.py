@@ -29,11 +29,12 @@ def get_puzzle(request):
     puzzle = {}
     t_puzzle = {}    
     read_length = 75
+    max_allowable_exon_height = 38
     junction_norm = read_length * 2
     
-    two_exon_junction_puzzle = False
-    while not two_exon_junction_puzzle:
-        two_exon_junction_puzzle = True         
+    acceptable_puzzle = False
+    while not acceptable_puzzle:
+        acceptable_puzzle = True         
         
         highest_read_id = Read.objects.order_by('-id')[0].id
         print 'highest_read_id: ' + str(highest_read_id) 
@@ -65,7 +66,7 @@ def get_puzzle(request):
         smallest_length = 1000000 # Some really large number
         
         for i, exon in enumerate(exons):
-            if not two_exon_junction_puzzle:
+            if not acceptable_puzzle:
                 break
             
             main_read = 0
@@ -101,7 +102,7 @@ def get_puzzle(request):
                     if junctions:
                         if len(junctions) > 2:
                             print 'More than 2 exons: ' + str(len(junctions))
-                            two_exon_junction_puzzle = False
+                            acceptable_puzzle = False
                             break
                         
                         t_junction_width = read.readCount
@@ -117,16 +118,29 @@ def get_puzzle(request):
             exon_array.append(main_read)
             t_exon_array.append(t_main_read)
         
-    scaling_factor = 1.0/smallest_length
-    print 'scaling_factor: ' + str(scaling_factor)
-    
-    # Normalize lengths:
-    for junction in junction_array:
-        junction[len(junction) - 1] = int(round(junction[len(junction) - 1] * scaling_factor))
+        scaling_factor = 1.0/smallest_length
+        print 'scaling_factor: ' + str(scaling_factor)
         
-    scaled_exon_array = []
-    for exon in exon_array:
-        scaled_exon_array.append(int(round(exon * scaling_factor))) 
+        # Normalize lengths:
+        for junction in junction_array:
+            junction[len(junction) - 1] = int(round(junction[len(junction) - 1] * scaling_factor))
+            
+        scaled_exon_array = []
+        for exon in exon_array:
+            scaled_exon_array.append(int(round(exon * scaling_factor))) 
+            
+        # Check height
+        exon_height = [0 for i in range(len(exons))]
+        for j, exon_count in enumerate(scaled_exon_array):
+            exon_height[j] = exon_count
+            
+        for junction_details in junction_array:
+            for j in range(len(junction_details) - 1):
+                exon_height[junction_details[j]] += junction_details[len(junction_details) - 1]
+                
+        if max(exon_height) > max_allowable_exon_height:
+            print 'Exceeded acceptable height'
+            acceptable_puzzle = False
     
     puzzle['exons'] = scaled_exon_array
     puzzle['junctions'] = junction_array
