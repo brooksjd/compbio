@@ -12,7 +12,8 @@ class Command(BaseCommand):
         line_count = 0
         gtf_file_name = args[0]
         input_file_name = args[1]
-        expt_desc = args[2]
+        expression_profile = args[2]
+        expt_desc = args[3]
         
         gtf_file = open(gtf_file_name)
         
@@ -73,8 +74,39 @@ class Command(BaseCommand):
             else:
                 exons[gene_id].append([existing[0], existing[1], exon])                
                     
-        input_file = open(input_file_name)
+        sufficiently_expressed_genes = {}
+        expression_profile = open(expression_profile)
+        print 'Reading profile'
+        line_count = 0
+        old_gene = ''
+        expressed_count = 0
+        for line in expression_profile:
+            line_count += 1
+            if line_count % line_count_step == 0:
+                print 'Working on profile line ' + str(line_count)
+                
+            tokens = line.split('\t')
+            
+            gene = tokens[1].split('.')[0]
+            expression_level = int(tokens[5])
+            
+            if gene == old_gene:
+                if expression_level > 0: 
+                    expressed_count += 1
+            else:
+                
+                if expressed_count > 1:
+                    sufficiently_expressed_genes[old_gene] = expressed_count
+                    
+                old_gene = gene
+                if expression_level > 0: 
+                    expressed_count = 1
+                else:
+                    expressed_count = 0
+                    
+        print 'Number of sufficiently expressed genes: ' + str(len(sufficiently_expressed_genes))
         
+        input_file = open(input_file_name)        
         print 'Reading reads'
         line_count = 0
         for line in input_file:
@@ -98,6 +130,11 @@ class Command(BaseCommand):
             transcript_tokens = transcript_id.split('.')
             gene_id = transcript_tokens[0]
             
+            try:
+                _ = sufficiently_expressed_genes[gene_id]
+            except:                
+                continue
+            
             matches = []
             
             possible_matches = exons[gene_id]
@@ -113,15 +150,15 @@ class Command(BaseCommand):
                 matches_exons.append(match[2])
                 
             try:
-                read = Read.objects.annotate(num_exons=Count('exons')).filter(num_exons=len(matches_exons), experiment=experiment)
+                read = Read.objects.filter(exonCount=len(matches_exons), experiment=experiment)
                 for t_matches_exon in matches_exons:
-                    read = read.filter(exons__id__contains=t_matches_exon.id)
+                    read = read.filter(exons__id=t_matches_exon.id)
                 read = read.get()
                     
                 read.readCount = read.readCount + 1
                 read.save()
             except Read.DoesNotExist:                 
-                read = Read(experiment=experiment, readCount=1)
+                read = Read(experiment=experiment, readCount=1, exonCount=len(matches_exons))
                 read.save()
                 for matches_exon in matches_exons:
                     read.exons.add(matches_exon) 

@@ -41,12 +41,8 @@ function initGame(numExons, exonCount, gameObj, exonWidths){
     var exonSprites = new Array();
     
     // TODO: add lots more and better colors
-    //colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
-
-    // Kelly's max contrast set
-    // http://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
-    colorList = new Array('#FFB300','#803E75','#FF6800','#A6BDD7','#C10020','#CEA262','#817066','#007D34','#F6768E','#00538A','#FF7A5C',
-        '#53377A','#FF8E00','#B32851','#F4C800','#7F180D','#93AA00','#593315','#F13A13','#232C16');
+    colorList = new Array('#FF0000','#00FF00','#0000FF','#FFFF00','#00FFFF','#FF00FF');
+    //colorList = new Array('#B0171F',
 
     coloridx = 0;
 
@@ -247,10 +243,7 @@ transcriptGame.start = function(){
         puzzleLayerH: 640,
 
         listLayerW: 256,
-        listLayerH: 640,
-
-        scoreLayerW: 256,
-        scoreLayerH: 128,
+        listLayerH: 768,
 
         puzzleTileSize: 30,
         puzzleTileGap: 15,
@@ -262,12 +255,11 @@ transcriptGame.start = function(){
 
     // puzzle class
     var puzzle = new function() {
-        
-        this.exonCount = puzzleData.exons;
+        this.numExons = 0;
+        this.exonCount = new Array();
         // this.exonWidths = new Array();
-        this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
-        this.exonWidths = puzzleData.widths;
-        this.numExons = this.exonCount.length;
+        this.junctions = new Array();    // [exon1] [exon2] [junction count]
+        this.exonWidths = new Array();
 
         // Function for recieving puzzle parameters from server
         // this.getParams () { };
@@ -282,15 +274,15 @@ transcriptGame.start = function(){
     //exonCount[3] = 2;
 
     // puzzle.getParams();
-    // puzzle.numExons = 4;
-    // puzzle.exonCount[0] = 2;
-    // puzzle.exonCount[1] = 3;
-    // puzzle.exonCount[2] = 3;
-    // puzzle.exonCount[3] = 2;
-    // puzzle.junctions[0] = new Array(0,2,1);
-    // puzzle.junctions[1] = new Array(0,3,2);
-// 
-    // puzzle.exonWidths = new Array(25,40,30,30);
+    puzzle.numExons = 4;
+    puzzle.exonCount[0] = 2;
+    puzzle.exonCount[1] = 3;
+    puzzle.exonCount[2] = 3;
+    puzzle.exonCount[3] = 2;
+    puzzle.junctions[0] = new Array(0,2,1);
+    puzzle.junctions[1] = new Array(0,3,2);
+
+    puzzle.exonWidths = new Array(25,40,30,30);
 
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
@@ -302,24 +294,22 @@ transcriptGame.start = function(){
     var controlsLayer = new lime.Layer().setAnchorPoint(0, 0);
     var listLayer = new lime.Layer().setAnchorPoint(0,0);
     var linkedLayer = new lime.Layer().setAnchorPoint(0,0);
-    var scoreLayer = new lime.Layer().setAnchorPoint(0,0);
-
+   
     gameScene.appendChild(puzzleLayer);
     gameScene.appendChild(linkedLayer);
     gameScene.appendChild(controlsLayer);
-    gameScene.appendChild(scoreLayer);
 
     var controlsArea = new lime.Sprite().setAnchorPoint(0, 0);
     controlsArea.setPosition(0,gameObj.height-gameObj.controlsLayerH);
     controlsArea.setSize(gameObj.controlsLayerW,gameObj.controlsLayerH);
     controlsArea.setFill('#333333');
-    controlsArea.setStroke(2,255,255,0);
+    controlsArea.setStroke(2,'#FFF000');
     controlsLayer.appendChild(controlsArea);
 
     var puzzleArea = new lime.Sprite().setAnchorPoint(0,0)
         .setSize(gameObj.puzzleLayerW,gameObj.puzzleLayerH)
         .setFill('#333333')
-        .setStroke(2,255,0,16);
+        .setStroke(2,'#FF0000');
     puzzleLayer.appendChild(puzzleArea);
 
 
@@ -327,15 +317,8 @@ transcriptGame.start = function(){
         .setSize(gameObj.listLayerW,gameObj.listLayerH)
         .setFill('#333333')
         .setPosition(gameObj.width-gameObj.listLayerW,0)
-        .setStroke(2,43,206,72);
+        .setStroke(2,'#00FF00');
     gameScene.appendChild(listArea);
-
-    var scoreArea = new lime.Sprite().setAnchorPoint(0,0)
-        .setSize(gameObj.scoreLayerW,gameObj.scoreLayerH)
-        .setFill('#333333')
-        .setPosition(gameObj.width-gameObj.scoreLayerW,gameObj.height-gameObj.scoreLayerH)
-        .setStroke(2,116,10,255);
-    scoreLayer.appendChild(scoreArea);
 
     gameScene.appendChild(listLayer);
     // Set up initial puzzle configuration
@@ -417,32 +400,6 @@ transcriptGame.start = function(){
         .setPosition(controlSprites[controlSprites.length-1].getPosition().x+puzzle.exonWidths[puzzle.exonWidths.length-1]+25,controlSprites[controlSprites.length-1].getPosition().y);
     controlsLayer.appendChild(plusButton);
 
-    // Score labels
-    var scoreTitle = new lime.Label().setAnchorPoint(0,0)
-        .setFontSize(25)
-        .setFontColor('#C10020')
-        .setText("Score:")
-        .setOpacity(0)
-        .setPosition(scoreArea.getPosition().x+20,scoreArea.getPosition().y+20);
-    scoreLayer.appendChild(scoreTitle);
-
-    var scoreValue = new lime.Label().setAnchorPoint(0,0)
-        .setFontSize(40)
-        .setFontColor('#C10020')
-        .setText("0")
-        .setOpacity(0)
-        .setPosition(scoreTitle.getPosition().x+25,scoreTitle.getPosition().y+40);
-    scoreLayer.appendChild(scoreValue);
-
-    // Next puzzle button
-    var nextButton = new lime.GlossyButton().setAnchorPoint(0,0)
-        .setSize(80,40)
-        .setColor('#E3E3E3')
-        .setText('Next')
-        .setOpacity(0)
-        .setPosition(scoreArea.getPosition().x+scoreArea.getSize().width/2+40,scoreArea.getPosition().y+scoreArea.getSize().height/2);
-    scoreLayer.appendChild(nextButton);
-    
     // plus button logic
     goog.events.listen(plusButton, ['mousedown','touchstart'],function(e){
         var currTranscript = new Array();
@@ -518,29 +475,6 @@ transcriptGame.start = function(){
             redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
         }
 
-        // Check for puzzle completion
-        var complete = true;
-        for (var i=0; i<exonIdxs.length; i++)
-        {
-            if (exonIdxs[i] > -1)
-                complete = false;
-        }
-
-        for (var i=0; i<junctionCount.length; i++)
-        {
-            if (junctionCount[i] > 0)
-                complete = false;
-        }
-
-        // Display score and next button if puzzle is complete
-        if (complete)
-        {
-            // var score = computeScore(transcriptList, puzzle);
-            scoreTitle.setOpacity(1);
-            scoreValue.setOpacity(1);
-            // scoreValue.setText(''+score);
-            nextButton.setOpacity(1);    
-        }   
     });
 
     var minusButton = new lime.GlossyButton().setAnchorPoint(0,0)
@@ -612,7 +546,6 @@ transcriptGame.start = function(){
         }
 
     });
-
 
     // set current scene active
 	director.replaceScene(gameScene);
