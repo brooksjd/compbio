@@ -54,6 +54,18 @@ function initGame(numExons, exonCount, gameObj, exonWidths){
     for (var i=0; i<numExons; i++)
     {
         exonSprites[i] = new Array();
+        
+        // ** HACK** may need to fix later
+        if (exonCount[i] == 0)
+        {
+            // Make invisible exon that won't be used other than for parameter purposes
+            exonSprites[i][0] = new lime.Sprite().setAnchorPoint(0,0)
+                .setSize(exonWidths[i],gameObj.puzzleTileSize)
+                .setPosition(blockStart, gameObj.puzzleLayerH-40)
+                .setFill(colorList[coloridx])
+                .setOpacity(0);
+        }
+        
         for (var j=0; j<exonCount[i]; j++)
         {
             exonSprites[i][j] = new lime.Sprite().setAnchorPoint(0,0)
@@ -263,11 +275,17 @@ transcriptGame.start = function(){
     // puzzle class
     var puzzle = new function() {
         
-        this.exonCount = puzzleData.exons;
+        //this.exonCount = puzzleData.exons;
         // this.exonWidths = new Array();
-        this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
-        this.exonWidths = puzzleData.widths;
-        this.numExons = this.exonCount.length;
+        //this.junctions = puzzleData.junctions;    // [exon1] [exon2] [junction count]
+        //this.exonWidths = puzzleData.widths;
+        //this.numExons = this.exonCount.length;
+
+        this.numExons = 0;
+        this.exonWidths = new Array();
+        this.junctions = new Array();
+        this.exonCount = new Array();
+
 
         // Function for recieving puzzle parameters from server
         // this.getParams () { };
@@ -283,7 +301,7 @@ transcriptGame.start = function(){
 
     //puzzle.getParams();
     puzzle.numExons = 4;
-    puzzle.exonCount[0] = 2;
+    puzzle.exonCount[0] = 0;
     puzzle.exonCount[1] = 3;
     puzzle.exonCount[2] = 3;
     puzzle.exonCount[3] = 2;
@@ -291,7 +309,8 @@ transcriptGame.start = function(){
     puzzle.junctions[1] = new Array(0,3,2);
 // 
     puzzle.exonWidths = new Array(25,40,30,30);
-
+    
+    
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
     director.makeMobileWebAppCapable();    
@@ -355,23 +374,16 @@ transcriptGame.start = function(){
         {
             puzzleLayer.appendChild(exonSprites[i][j]);
         }
-        exonIdxs[i] = exonSprites[i].length-1;
+
+        // Resolve hack
+        if (exonSprites[i][0].getOpacity() == 0)
+            exonIdxs[i] = -1;
+        else
+            exonIdxs[i] = exonSprites[i].length-1;
         controlsLayer.appendChild(controlSprites[i]);
     }
     redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
 
-    // Add labels for screenshot purposes
-    var label1 = new lime.Label().setAnchorPoint(0,0)
-        .setPosition(exonSprites[0][1].getPosition().x+10,exonSprites[0][1].getPosition().y+10)
-        .setText('A')
-        .setFontColor('#FFFFFF');
-    //puzzleLayer.appendChild(label1);
-
-    var label2 = new lime.Label().setAnchorPoint(0,0)
-        .setPosition(exonSprites[2][2].getPosition().x+10,exonSprites[2][2].getPosition().y+10)
-        .setText('A')
-        .setFontColor('#FFFFFF');
-    //puzzleLayer.appendChild(label2);
 	
 
     transcriptList = new Array();
@@ -399,7 +411,15 @@ transcriptGame.start = function(){
             {
                 exonSprites[i][j].setOpacity(1);
             }
-            exonIdxs[i] = exonSprites[i].length-1;
+            
+            // resolve hack
+            if (puzzle.exonCount[i] == 0)
+            {
+                exonSprites[i][0].setOpacity(0);
+                exonIdxs[i] = -1;
+            }
+            else
+                exonIdxs[i] = exonSprites[i].length-1;
         }
 
         // Reset linked block counts
