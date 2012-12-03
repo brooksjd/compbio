@@ -291,26 +291,18 @@ transcriptGame.start = function(){
         // this.getParams () { };
     }
 
-    // Example puzzle (TODO: make puzzle.js object)
-    //var numExons = 4;
-    //var exonCount = new Array();
-    //exonCount[0] = 2;
-    //exonCount[1] = 3;
-    //exonCount[2] = 3;
-    //exonCount[3] = 2;
-
     //puzzle.getParams();
     
     
-    // puzzle.numExons = 4;
-    // puzzle.exonCount[0] = 2;
-    // puzzle.exonCount[1] = 3;
-    // puzzle.exonCount[2] = 3;
-    // puzzle.exonCount[3] = 2;
-    // puzzle.junctions[0] = new Array(0,2,1);
-    // puzzle.junctions[1] = new Array(0,3,2);
+    puzzle.numExons = 4;
+    puzzle.exonCount[0] = 0;
+    puzzle.exonCount[1] = 3;
+    puzzle.exonCount[2] = 3;
+    puzzle.exonCount[3] = 2;
+    puzzle.junctions[0] = new Array(0,2,1);
+    puzzle.junctions[1] = new Array(0,3,2);
 // // 
-    // puzzle.exonWidths = new Array(25,40,30,30);
+    puzzle.exonWidths = new Array(25,40,30,30);
 
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
