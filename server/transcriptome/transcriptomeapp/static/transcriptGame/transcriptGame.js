@@ -285,7 +285,7 @@ transcriptGame.start = function(){
         //this.numExons = this.exonCount.length;
 
         this.numExons = 0;
-        this.exonWidths = new Array();
+        //this.exonWidths = new Array();
         this.junctions = new Array();
         this.exonCount = new Array();
 
@@ -298,16 +298,27 @@ transcriptGame.start = function(){
    
     // Normalize exon widths by number of bases
     // Find median exon width
-    sortVals = puzzle.exonWidths.sort(function(a,b) {return a-b;});
+    var sortVals = puzzle.exonWidths.slice(0);
+    sortVals.sort(function(a,b) {return a-b;});
     var halfidx = Math.floor(sortVals.length/2);
     var median = 0;
-    if (values.length % 2)
+    if (sortVals.length % 2)
         median = sortVals[halfidx];
     else
         median = (sortVals[halfidx-1]+sortVals[halfidx])/2.0;
 
-    // Scale widths by ratio of 
-              
+    // Scale widths by ratio to median width
+    var newWidths = new Array();
+    for (var i=0; i<puzzle.exonWidths.length; i++)
+    {
+        newWidths[i] = Math.round((puzzle.exonWidths[i]/(median*1.0))*((gameObj.puzzleTileMaxW+gameObj.puzzleTileMinW)/2.0));
+        if (newWidths[i] > gameObj.puzzleTileMaxW)
+            newWidths[i] = gameObj.puzzleTileMaxW;
+        else if (newWidths[i] < gameObj.puzzleTileMinW)
+            newWidths[i] = gameObj.puzzleTileMinW;
+    }
+    
+    puzzle.exonWidths = newWidths;
     
     puzzle.numExons = 4;
     puzzle.exonCount[0] = 0;
