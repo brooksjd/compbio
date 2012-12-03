@@ -39,12 +39,9 @@ class Command(BaseCommand):
             
             transcripts.setdefault(transcript_id, []).append((exon_start, exon_stop))              
                     
-        sufficiently_expressed_genes = {}
         expression_profile = open(expression_profile)
         print 'Reading profile'
         line_count = 0
-        old_gene = ''
-        expressed_count = 0
         for line in expression_profile:
             line_count += 1
             if line_count % line_count_step == 0:
@@ -81,64 +78,4 @@ class Command(BaseCommand):
                 truth_transcript = TruthTranscript(truth=truth, exonCount=len(exons), expression=expression_level)
                 truth_transcript.save()
                 for exon in exons:
-                    truth_transcript.exons.add(exon)            
-                    
-        print 'Number of sufficiently expressed genes: ' + str(len(sufficiently_expressed_genes))
-        
-        input_file = open(input_file_name)        
-        print 'Reading reads'
-        line_count = 0
-        for line in input_file:
-            line_count += 1
-            if line_count % line_count_step == 0:
-                print 'Working on read line ' + str(line_count) 
-                
-            tokens = line.split('\t')
-            
-            if tokens[0].rstrip() == 'polyA':
-                continue
-            
-            read_start = int(tokens[1])
-            read_stop = int(tokens[2])            
-            exon_num = int(tokens[9])
-            
-            # Hack to make searching faster. May not work on TopHat output
-            desc = tokens[3]
-            desc_tokens = desc.split(':')
-            transcript_id = desc_tokens[2]
-            transcript_tokens = transcript_id.split('.')
-            gene_id = transcript_tokens[0]
-            
-            try:
-                _ = sufficiently_expressed_genes[gene_id]
-            except:                
-                continue
-            
-            matches = []
-            
-            possible_matches = exons[gene_id]
-            for possible_match in possible_matches:
-                if not (possible_match[1] <= read_start or possible_match[0] >= read_stop):
-                    matches.append(possible_match)
-                    
-                    if len(matches) >= exon_num:
-                        break;
-                        
-            matches_exons = []
-            for match in matches:
-                matches_exons.append(match[2])
-                
-            try:
-                read = Read.objects.filter(exonCount=len(matches_exons), experiment=experiment)
-                for t_matches_exon in matches_exons:
-                    read = read.filter(exons__id=t_matches_exon.id)
-                read = read.get()
-                    
-                read.readCount = read.readCount + 1
-                read.save()
-            except Read.DoesNotExist:                 
-                read = Read(experiment=experiment, readCount=1, exonCount=len(matches_exons))
-                read.save()
-                for matches_exon in matches_exons:
-                    read.exons.add(matches_exon) 
-            
+                    truth_transcript.exons.add(exon)        

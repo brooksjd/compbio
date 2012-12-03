@@ -13,13 +13,15 @@ class Command(BaseCommand):
         gtf_file_name = args[0]
         input_file_name = args[1]
         expression_profile = args[2]
-        expt_desc = args[3]
+        valid_puzzles_file = args[3]
+        expt_desc = args[4]
         
         gtf_file = open(gtf_file_name)
         
         experiment = Experiment(description=expt_desc)
         experiment.save()
         
+        # Working on gtf
         exons = {}
         print 'Reading gtf'
         for line in gtf_file:
@@ -74,6 +76,7 @@ class Command(BaseCommand):
             else:
                 exons[gene_id].append([existing[0], existing[1], exon])                
                     
+        # Working on profile
         sufficiently_expressed_genes = {}
         expression_profile = open(expression_profile)
         print 'Reading profile'
@@ -106,6 +109,13 @@ class Command(BaseCommand):
                     
         print 'Number of sufficiently expressed genes: ' + str(len(sufficiently_expressed_genes))
         
+        # Working on valid puzzles
+        print 'Reading valid puzzles'
+        valid_puzzles = {}
+        valid_puzzle_data = open(valid_puzzles_file)
+        for line in valid_puzzle_data:
+            valid_puzzles[line.rstrip()] = 1
+        
         input_file = open(input_file_name)        
         print 'Reading reads'
         line_count = 0
@@ -132,6 +142,7 @@ class Command(BaseCommand):
             
             try:
                 _ = sufficiently_expressed_genes[gene_id]
+                _ = valid_puzzles[gene_id]
             except:                
                 continue
             
