@@ -48,69 +48,64 @@ def well_behaved_transcripts(transcript_regions):
     #if transcript_regions.keys()[0] == ' transcript_id "MTR060710.1.27.0"': sys.exit()        
     return True
 
+def slicedict(d, s):
+    return {k:v for k,v in d.iteritems() if k.startswith(s)}
+
 def main():
-    transcriptome_file = open('transcriptome.gtf')
+    transcriptome_file = open(sys.argv[1])
     gene_count = 0
     transcript_count = 0
     
     last_gene = ''
-    transcripts = set()
     transcript_regions = {}
-    for line in transcriptome_file:        
+    
+    genes = set()
+    allowed_genes = {}
+    
+    for line in transcriptome_file:   
+        # print line
         tokens = line.split('\t')
         
         feature = tokens[2]
         cur_region = [int(tokens[3]), int(tokens[4])]
         if (feature != 'exon'):
             continue
-        
-        #print line.rstrip()
-        
+                
         desc = tokens[8]
         tokens = desc.split(';')
         
-        if last_gene == tokens[0]:            
-            transcripts.add(tokens[1])            
-            transcript_regions.setdefault(tokens[1], []).append(cur_region)           
-#            
-#            if not has_overlap:
-#                for region in regions:
-#                    if getOverlap(region, cur_region):
-#                        has_overlap = True
-#                        break
-#            
-#            #print has_overlap
-#            regions.append(cur_region)
-        else:
-            
-            if len(transcripts) > 1 and well_behaved_transcripts(transcript_regions):
-                #print transcript_regions
-                gene_count += 1
-                transcript_count += len(transcripts)
-                for buffer_line in line_buffer:
-                    print buffer_line
-            
-            transcripts = set()
-            transcript_regions = {}
-            line_buffer = []
-            has_overlap = False
-            
-            last_gene = tokens[0]            
-            transcripts.add(tokens[1])
-            transcript_regions.setdefault(tokens[1], []).append(cur_region)
-            regions = [cur_region]
-            
-        line_buffer.append(line.rstrip())
+        gene_id = tokens[0].strip()
+        gene_id = gene_id.strip()[9:len(gene_id) - 1]
+        transcript_id = tokens[1].strip()
+        transcript_id = transcript_id[15:len(transcript_id) - 1]
         
-#        print 'gene_count: ' + str(gene_count)
-#        print 'transcript_count: ' + str(transcript_count)
-            
-        #number_of_exons = tokens[2]
+#        print gene_id + ' : ' + transcript_id
         
-        #first_loc = string.find(number_of_exons, '"') + 1
-        #number_of_exons = int(number_of_exons[first_loc:string.find(number_of_exons, '"', first_loc)])
+        transcript_regions.setdefault(transcript_id, []).append(cur_region)
+        genes.add(gene_id)
         
-        #if (number_of_exons > 1):
-        #    print line.rstrip()
+    #print transcript_regions
+    for gene in genes:
+        gene_transcripts = slicedict(transcript_regions, gene)
+        if len(gene_transcripts) > 1 and well_behaved_transcripts(gene_transcripts):
+            allowed_genes[gene] = 1
+    
+    transcriptome_file = open(sys.argv[1])        
+    for line in transcriptome_file:
+        tokens = line.split('\t')
+        
+        feature = tokens[2]
+        if (feature != 'exon'):
+            continue
+        
+        desc = tokens[8]
+        tokens = desc.split(';')        
+        gene_id = tokens[0][9:len(tokens[0]) - 1]
+        
+        try:
+            _ = allowed_genes[gene_id]
+            print line.rstrip()
+        except KeyError:
+            pass
 
 main()

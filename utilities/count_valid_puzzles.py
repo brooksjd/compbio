@@ -1,5 +1,8 @@
+import sys
+
 def main():
-    annotation = open('re_filtered_transcriptome.gtf')
+    annotation = open(sys.argv[1])
+    reads = open(sys.argv[2])
     
     genes = {}
     for line in annotation:
@@ -23,7 +26,6 @@ def main():
         if not found_region:
             existing_regions.append([cur_start, cur_end])
             
-    reads = open('mm9_hydrolysis.bed')
     old_gene = ''
     valid_puzzle_count = 0
     mapped_exons = set()

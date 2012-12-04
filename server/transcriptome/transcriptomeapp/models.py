@@ -34,6 +34,8 @@ class Read(models.Model):
 class Result(models.Model):
     gene = models.ForeignKey(Gene)
     experiment = models.ForeignKey(Experiment)
+    score = models.FloatField()
+    user = models.CharField(max_length=200, null=True, blank=True)
     
 class Transcript(models.Model):
     result = models.ForeignKey(Result)
