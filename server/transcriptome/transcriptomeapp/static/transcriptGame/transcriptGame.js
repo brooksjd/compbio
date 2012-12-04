@@ -244,6 +244,7 @@ function initControls(exonSprites,gameObj,exonWidths){
 
 // entrypoint
 var puzzleData;
+var started = 0;
 
 transcriptGame.getPuzzle = function(){
 	jQuery.getJSON( 'http://localhost:8000/transcriptomeapp/get_puzzle', function(data){
@@ -358,7 +359,34 @@ transcriptGame.start = function(){
 	var director = new lime.Director(document.body,gameObj.width, gameObj.height);
     //director.setDisplayFPS(false);
     director.makeMobileWebAppCapable();    
-	var gameScene = new lime.Scene();
+	
+    var gameScene = new lime.Scene();
+    var instructScene = new lime.Scene().setRenderer(lime.Renderer.CANVAS);
+    var instructions = new lime.Sprite().setAnchorPoint(0,0)
+        .setPosition(0,0)
+        .setSize(gameObj.width, gameObj.height)
+        .setFill(instructionImage);
+    instructScene.appendChild(instructions);
+   
+    
+    
+    var playButton = new lime.GlossyButton().setAnchorPoint(0,0)
+        .setSize(80,40)
+        .setText('Start')
+        .setColor('#E3E3E3')
+        .setPosition(gameObj.puzzleLayerW+gameObj.scoreLayerW/2,gameObj.puzzleLayerH+gameObj.scoreLayerH/2);
+    instructScene.appendChild(playButton);
+   
+    goog.events.listen(playButton,['mousedown','touchstart'],function(e){
+        started = 1;
+        director.pushScene(gameScene);
+    });
+    
+    if (started == 0)
+        director.replaceScene(instructScene);
+    else
+        director.replaceScene(gameScene);
+
     gameScene.setRenderer(lime.Renderer.CANVAS);
 
     var puzzleLayer = new lime.Layer().setAnchorPoint(0, 0);
@@ -704,7 +732,7 @@ transcriptGame.start = function(){
 
 
     // set current scene active
-	director.replaceScene(gameScene);
+	//director.replaceScene(gameScene);
 
 }
 
