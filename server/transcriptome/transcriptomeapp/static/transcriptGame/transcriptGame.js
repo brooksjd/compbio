@@ -167,6 +167,8 @@ function redrawList(transcriptList,transcriptCount,gameObj,listLayer,exonSprites
                 .setPosition(gameObj.puzzleLayerW+j*(gameObj.listTileSize+gameObj.listTileGap)+5, 5+i*(gameObj.listTileSize+gameObj.listTileGap));
             if (transcriptList[i][j] == 0)
                 currBlock.setOpacity(.25);
+            else
+                currBlock.setStroke(1,'#FFFFFF');
             listLayer.appendChild(currBlock);
         }
 
@@ -221,13 +223,19 @@ function initControls(exonSprites,gameObj,exonWidths){
             .setSize(exonWidths[i],gameObj.puzzleTileSize)
             .setPosition(exonSprites[i][0].getPosition().x, gameObj.puzzleLayerH+gameObj.controlsLayerH/2-gameObj.puzzleTileSize/2)
             .setFill(exonSprites[i][0].getFill())
-            .setOpacity(.25);
+            .setOpacity(.2);
 
         goog.events.listen(controlSprites[i],goog.events.EventType.CLICK,function(e){
-            if (this.getOpacity() == .25)
+            if (this.getOpacity() == .2)
+            {
                 this.setOpacity(1);
+                this.setStroke(2,'#FFFFFF');
+            }
             else
-                this.setOpacity(.25);
+            {
+                this.setOpacity(.2);
+                this.setStroke(0,'#FFFFFF');
+            }
         });
     }
 
@@ -267,8 +275,8 @@ transcriptGame.start = function(){
         puzzleTileSize: 15,
         puzzleTileGap: 10,
     
-        puzzleTileMaxW: 50,
-        puzzleTileMinW: 10,
+        puzzleTileMaxW: 45,
+        puzzleTileMinW: 15,
 
         listTileSize: 10,
         listTileGap: 5
@@ -420,7 +428,7 @@ transcriptGame.start = function(){
     redrawLinks(puzzle.junctions,junctionCount,linkedLayer,exonSprites, exonIdxs, gameObj, puzzle.exonWidths);
 
 	
-
+    
     transcriptList = new Array();
     transcriptCount = new Array();
 
@@ -456,6 +464,11 @@ transcriptGame.start = function(){
         // Only load next puzzle if next button is visible
         if (this.getOpacity() == 1)
         {
+            // Send score to server
+            // var score = scoreValue.getText();
+            // transcriptList is an n x d matrix with n transcripts of gene length d
+            // transcriptCount is a n dimensional vector
+
             transcriptGame.getPuzzle();
             
             goog.events.removeAll();
