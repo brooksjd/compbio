@@ -242,6 +242,40 @@ function initControls(exonSprites,gameObj,exonWidths){
     return controlSprites;
 }
 
+// Score a particular list of transcripts
+function computeScore(transcriptList, transcriptCount, puzzle)
+{
+    var score = 0;
+    
+    for (var i=0; i<transcriptList.length; i++)
+    {
+        // Sum up widths in each transcript
+        var currScore = 0;
+        var count = 0;
+        for (var j=0; j<transcriptList[i].length; j++)
+        {
+            if (transcriptList[i][j] == 1)
+            {
+                currScore += puzzle.exonWidths[j];
+                count++;
+            }
+        }
+
+        // Multiply by log of count, hence you get 0 points for a transcript of length 1
+        currScore *= Math.log(count);
+
+        score += currScore;
+    }
+
+    // Compute discount for total # of transcripts
+    var discountFactor = .001;
+    var discount = 1/(1+(discountFactor*Math.exp(transcriptList.length)));
+
+    score = Math.round(score*discount);
+
+    return score;
+}
+
 // entrypoint
 var puzzleData;
 var started = 0;
@@ -474,8 +508,9 @@ transcriptGame.start = function(){
         .setFontSize(40)
         .setFontColor('#C10020')
         .setText("0")
+        .setAlign('center')
         .setOpacity(0)
-        .setPosition(scoreTitle.getPosition().x+25,scoreTitle.getPosition().y+40);
+        .setPosition(scoreTitle.getPosition().x,scoreTitle.getPosition().y+40);
     scoreLayer.appendChild(scoreValue);
 
     // Next puzzle button
@@ -649,10 +684,10 @@ transcriptGame.start = function(){
         // Display score and next button if puzzle is complete
         if (complete)
         {
-            // var score = computeScore(transcriptList, puzzle);
+            var score = computeScore(transcriptList, transcriptCount, puzzle);
             scoreTitle.setOpacity(1);
             scoreValue.setOpacity(1);
-            // scoreValue.setText(''+score);
+            scoreValue.setText(''+score);
             nextButton.setOpacity(1);    
         }   
     });
