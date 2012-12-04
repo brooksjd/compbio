@@ -31,6 +31,7 @@ def get_puzzle(request):
     read_length = 75
     max_allowable_exon_height = 38
     junction_norm = read_length * 2
+    scoring_version = '1.0.0'
     
     acceptable_puzzle = False
     while not acceptable_puzzle:
@@ -151,6 +152,7 @@ def get_puzzle(request):
     puzzle['experiment'] = experiment.id
     puzzle['exon_ids'] = exon_id_list
     puzzle['gene'] = gene.id
+    puzzle['version'] = scoring_version
     
     t_puzzle['exons'] = t_exon_array
     t_puzzle['junctions'] = t_junction_array
@@ -177,7 +179,7 @@ def user_result(request):
         print 'found exon: ' + str(exon_id)
     
     print 'About to save result'
-    result = Result(gene=gene, experiment=experiment, score=float(request.POST['score']))
+    result = Result(gene=gene, experiment=experiment, score=float(request.POST['score']), version=request.POST['version'])
     result.save()
     
     expressions = json.loads(request.POST['expressions'])
