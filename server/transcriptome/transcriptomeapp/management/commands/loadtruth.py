@@ -35,7 +35,7 @@ class Command(BaseCommand):
             details_tokens = details.split(';')
             
             transcript_id = details_tokens[1].strip()
-            transcript_id = transcript_id[9:len(transcript_id) - 1]
+            transcript_id = transcript_id[15:len(transcript_id) - 1]
             
             transcripts.setdefault(transcript_id, []).append((exon_start, exon_stop))              
                     
@@ -59,12 +59,24 @@ class Command(BaseCommand):
                 truth = Truth.objects.get(gene=gene, experiment=experiment)
             except Truth.DoesNotExist:
                 truth = Truth(gene=gene, experiment=experiment)
+                truth.save()
                 
             # Find exons
             exon_limits = transcripts[transcript_id]
             exons = []
             for exon_limit in exon_limits:
-                exons.append(Exon.objects.get(end__gt=exon_limit[0], start__lt=exon_limit[1], gene=gene))
+                try:
+                    exons.append(Exon.objects.get(end__gt=exon_limit[0], start__lt=exon_limit[1], gene=gene))
+                except Exon.MultipleObjectsReturned:
+                    print 'transcript_id: ' + str(transcript_id)
+                    print 'exon_limits: ' + str(exon_limits)
+                    print 'exon_limit: ' + str(exon_limit)
+                    print 'gene: ' + str(gene.id)
+                    
+                    found_exons = Exon.objects.filter(end__gt=exon_limit[0], start__lt=exon_limit[1], gene=gene).all()
+                    for found_exon in found_exons:
+                        print 'found_exon: ' + str(found_exon.id) + ' : ' + str(found_exon.start) + ' : ' + str(found_exon.end)
+                    sys.exit()
                 
             # See if such a truth transcript exists first
             truth_transcript = TruthTranscript.objects.filter(truth=truth, exonCount=len(exons))
