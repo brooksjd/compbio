@@ -613,7 +613,8 @@ transcriptGame.start = function(){
             for (var i=0; i<exonIdxs.length; i++)
             {
                 // Removing normal exon
-                if (currTranscript[i] == 1 && currLinks[i] == 0)
+                //if (currTranscript[i] == 1 && currLinks[i] == 0)
+                if (currTranscript[i] == 1 && exonIdxs[i] > -1)
                 {
                     exonSprites[i][exonIdxs[i]].setOpacity(0);
                     exonIdxs[i] = exonIdxs[i]-1;
@@ -711,7 +712,8 @@ transcriptGame.start = function(){
             // Add blocks back to columns
             for (var i=0; i<exonIdxs.length; i++)
             {
-                if (currTranscript[i] == 1 && currLinks[i] == 0)
+                //if (currTranscript[i] == 1 && currLinks[i] == 0)
+                if (currTranscript[i] == 1 && exonIdxs[i] < puzzle.exonCount[i]-1)
                 {
                     exonIdxs[i]++;
                     exonSprites[i][exonIdxs[i]].setOpacity(1);
