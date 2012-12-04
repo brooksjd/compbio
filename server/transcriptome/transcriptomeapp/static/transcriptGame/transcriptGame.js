@@ -35,7 +35,7 @@ function initGame(numExons, exonCount, gameObj, exonWidths){
         var blockStart = gameObj.puzzleLayerW/2-(gameObj.puzzleTileSize+gameObj.puzzleTileGap)*((numExons-1)/2)-gameObj.puzzleTileSize/2;
     }
     */
-    blockStart = gameObj.puzzleLayerW/2-totalWidth/2;
+    blockStart = gameObj.puzzleLayerW/2-totalWidth/2+40;
 
     var exonSprites = new Array();
     
