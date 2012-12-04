@@ -14,7 +14,7 @@ from django.core.files import File
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 
-from transcriptome.transcriptomeapp.models import Experiment, Exon, Gene, Read
+from transcriptome.transcriptomeapp.models import Experiment, Exon, Gene, Read, Result, Transcript
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,7 @@ def get_puzzle(request):
         print 'lowest_read_id: ' + str(lowest_read_id)
         
         selected_index = random.randint(lowest_read_id, highest_read_id)
+#        selected_index = 37795
         print 'selected_index: ' + str(selected_index)
         selected_read = Read.objects.order_by('id').filter(id__gte=selected_index)[0]
         
@@ -52,8 +53,10 @@ def get_puzzle(request):
         exons = Exon.objects.filter(gene=gene)
         
         exon_dict = {}
+        exon_id_list = []
         for i, exon in enumerate(exons):
             exon_dict[exon.id] = i
+            exon_id_list.append(exon.id)
         print 'exon_dict: ' + str(exon_dict)
         
         exon_array = []
@@ -145,9 +148,53 @@ def get_puzzle(request):
     puzzle['exons'] = scaled_exon_array
     puzzle['junctions'] = junction_array
     puzzle['widths'] = width_array
+    puzzle['experiment'] = experiment.id
+    puzzle['exon_ids'] = exon_id_list
+    puzzle['gene'] = gene.id
     
     t_puzzle['exons'] = t_exon_array
     t_puzzle['junctions'] = t_junction_array
     t_puzzle['widths'] = width_array
     
     return HttpResponse(content=json.dumps(puzzle), content_type="text/html; charset=utf-8")
+
+@csrf_exempt
+def user_result(request):
+#    json_result = request.POST['result']
+#    result_dict = json.load(json_result)
+    
+    gene = Gene.objects.get(id=int(request.POST['gene']))
+    print 'gene: ' + str(gene.id)
+    experiment = Experiment.objects.get(id=int(request.POST['experiment']))
+    print 'experiment: ' + str(experiment.id)
+    print 'raw exons params: ' + request.POST['exon_ids']
+    print 'exons params after parsing: ' + str(json.loads(request.POST['exon_ids']))
+    exon_ids = json.loads(request.POST['exon_ids'])
+    exons = []
+    for exon_id in exon_ids:
+        print 'about to search for exon: ' + str(exon_id)
+        exons.append(Exon.objects.get(id=int(exon_id)))
+        print 'found exon: ' + str(exon_id)
+    
+    print 'About to save result'
+    result = Result(gene=gene, experiment=experiment, score=float(request.POST['score']))
+    result.save()
+    
+    expressions = json.loads(request.POST['expressions'])
+    transcripts = json.loads(request.POST['transcripts'])
+    
+    print 'number of transcripts: ' + str(len(transcripts))
+    for i, transcript_exons in enumerate(transcripts):
+        print 'about to save transcript with expression: ' + str(float(expressions[i]))
+        transcript = Transcript(result=result, expression=float(expressions[i]))
+        transcript.save()
+        print 'after saving transcript with expression: ' + str(float(expressions[i]))
+        
+        for j, transcript_exon in enumerate(transcript_exons):
+            print 'checking whether to add exon: ' + str(j)
+            if transcript_exon == 1:
+                print 'adding exon: ' + str(exons[j])
+                transcript.exons.add(exons[j])
+                print 'finished adding exon: ' + str(exons[j])
+                
+    return HttpResponse('Success', content_type="text/html; charset=utf-8")

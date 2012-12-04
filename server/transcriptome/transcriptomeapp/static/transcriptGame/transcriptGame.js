@@ -247,7 +247,7 @@ var puzzleData;
 var started = 0;
 
 transcriptGame.getPuzzle = function(){
-	jQuery.getJSON( 'http://localhost:8000/transcriptomeapp/get_puzzle', function(data){
+	jQuery.getJSON( '/transcriptomeapp/get_puzzle', function(data){
 		console.log('Got puzzle');
 		puzzleData = data;
 		console.log(puzzleData);
@@ -492,10 +492,30 @@ transcriptGame.start = function(){
         // Only load next puzzle if next button is visible
         if (this.getOpacity() == 1)
         {
+        	// var transcriptResult = new Array()
             // Send score to server
-            // var score = scoreValue.getText();
+            // var score = scoreValue.getText();           
             // transcriptList is an n x d matrix with n transcripts of gene length d
             // transcriptCount is a n dimensional vector
+          	// transcriptResult['score'] = scoreValue.getText()
+          	// transcriptResult['transcripts'] = transcriptList
+          	// transcriptResult['expressions'] = transcriptCount
+          	// transcriptResult['experiment'] = puzzleData.experiment
+          	// transcriptResult['exon_ids'] = puzzleData.exon_ids
+          	// transcriptResult['gene'] = puzzleData.gene
+          	
+          	console.log('transcriptList: ' + transcriptList)
+          	console.log('transcriptList: ' + JSON.stringify(transcriptList))
+          	jQuery.post('/transcriptomeapp/user_result', {
+          		score: scoreValue.getText(),
+          		transcripts: JSON.stringify(transcriptList),
+          		expressions: JSON.stringify(transcriptCount),
+          		experiment: puzzleData.experiment,
+          		exon_ids: JSON.stringify(puzzleData.exon_ids),
+          		gene: puzzleData.gene
+          		}, function(data){
+          		console.log('User result received')
+          	})
 
             transcriptGame.getPuzzle();
             
