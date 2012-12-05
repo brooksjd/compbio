@@ -547,7 +547,8 @@ transcriptGame.start = function(){
           		expressions: JSON.stringify(transcriptCount),
           		experiment: puzzleData.experiment,
           		exon_ids: JSON.stringify(puzzleData.exon_ids),
-          		gene: puzzleData.gene
+          		gene: puzzleData.gene,
+          		version: puzzleData.version
           		}, function(data){
           		console.log('User result received')
           	})

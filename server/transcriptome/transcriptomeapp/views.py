@@ -14,7 +14,7 @@ from django.core.files import File
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 
-from transcriptome.transcriptomeapp.models import Experiment, Exon, Gene, Read, Result, Transcript
+from transcriptome.transcriptomeapp.models import Experiment, Exon, Gene, Read, Result, Transcript, Truth, TruthTranscript
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,7 @@ def get_puzzle(request):
     read_length = 75
     max_allowable_exon_height = 38
     junction_norm = read_length * 2
+    scoring_version = '1.0.0'
     
     acceptable_puzzle = False
     while not acceptable_puzzle:
@@ -42,7 +43,7 @@ def get_puzzle(request):
         print 'lowest_read_id: ' + str(lowest_read_id)
         
         selected_index = random.randint(lowest_read_id, highest_read_id)
-#        selected_index = 37795
+#        selected_index = 36566
         print 'selected_index: ' + str(selected_index)
         selected_read = Read.objects.order_by('id').filter(id__gte=selected_index)[0]
         
@@ -151,6 +152,7 @@ def get_puzzle(request):
     puzzle['experiment'] = experiment.id
     puzzle['exon_ids'] = exon_id_list
     puzzle['gene'] = gene.id
+    puzzle['version'] = scoring_version
     
     t_puzzle['exons'] = t_exon_array
     t_puzzle['junctions'] = t_junction_array
@@ -166,6 +168,7 @@ def user_result(request):
     gene = Gene.objects.get(id=int(request.POST['gene']))
     print 'gene: ' + str(gene.id)
     experiment = Experiment.objects.get(id=int(request.POST['experiment']))
+    
     print 'experiment: ' + str(experiment.id)
     print 'raw exons params: ' + request.POST['exon_ids']
     print 'exons params after parsing: ' + str(json.loads(request.POST['exon_ids']))
@@ -175,26 +178,85 @@ def user_result(request):
         print 'about to search for exon: ' + str(exon_id)
         exons.append(Exon.objects.get(id=int(exon_id)))
         print 'found exon: ' + str(exon_id)
+        
+    exon_dict = {}
+    transcript_dict = {}
+    transcript_object_dict = {}
+    truth_expressions = []
+    for i, exon_id in enumerate(exon_ids):
+        exon_dict[int(exon_id)] = i        
+    
+    # Look for truth
+    truth_transcripts = []
+    try:
+        truth = Truth.objects.get(experiment=experiment, gene=gene)
+        truth_transcripts = TruthTranscript.objects.filter(truth=truth).all()
+        for truth_transcript in truth_transcripts:
+            transcript_exon_list = ['0' for i in range(len(exon_dict))]
+            for transcript_exon in truth_transcript.exons.all():
+                transcript_exon_list[exon_dict[transcript_exon.id]] = '1'
+                
+            truth_transcript_key = "".join(transcript_exon_list)
+            transcript_dict[truth_transcript_key] = truth_transcript.expression
+            transcript_object_dict[truth_transcript_key] = truth_transcript
+            
+            truth_expressions.append(truth_transcript.expression)
+    except KeyError:
+        pass
+    sum_truth_expressions = sum(truth_expressions)
+    
+    print 'transcript_dict: ' + str(transcript_dict)
+    print 'truth_expressions: ' + str(truth_expressions)
     
     print 'About to save result'
-    result = Result(gene=gene, experiment=experiment, score=float(request.POST['score']))
+    result = Result(gene=gene, experiment=experiment, score=float(request.POST['score']), version=request.POST['version'], truth=truth)
     result.save()
     
     expressions = json.loads(request.POST['expressions'])
+    expressions = [float(expression) for expression in expressions]
+    sum_expressions = sum(expressions)
     transcripts = json.loads(request.POST['transcripts'])
+    
+    transcript_scores = []
     
     print 'number of transcripts: ' + str(len(transcripts))
     for i, transcript_exons in enumerate(transcripts):
-        print 'about to save transcript with expression: ' + str(float(expressions[i]))
-        transcript = Transcript(result=result, expression=float(expressions[i]))
+        print 'about to save transcript with expression: ' + str(expressions[i])
+        transcript = Transcript(result=result, expression=expressions[i])
         transcript.save()
         print 'after saving transcript with expression: ' + str(float(expressions[i]))
         
+        transcript_list = ['0' for j in range(len(transcript_exons))]
         for j, transcript_exon in enumerate(transcript_exons):
             print 'checking whether to add exon: ' + str(j)
             if transcript_exon == 1:
+                transcript_list[j] = '1'
                 print 'adding exon: ' + str(exons[j])
                 transcript.exons.add(exons[j])
                 print 'finished adding exon: ' + str(exons[j])
-                
+        
+        transcript_key = "".join(transcript_list)     
+        
+        try:
+            found_transcript_expression = transcript_dict[transcript_key]
+            found_transcript = transcript_object_dict[transcript_key]
+            
+            this_expression = expressions[i]/sum_expressions
+            that_expression = found_transcript_expression/sum_truth_expressions
+            expression_diff =  1 - abs(that_expression - this_expression) # subtract from 1 to make higher better
+            print 'this/that expression: ' + str(this_expression) + '/' + str(that_expression)
+            
+            transcript.truthScore = expression_diff
+            transcript.truthTranscript = found_transcript
+            transcript.save()
+            
+            transcript_scores.append(expression_diff)
+            
+        except KeyError:
+            print 'Could not find transcript: ' + transcript_key
+            pass
+        
+    result.truthScore = sum(transcript_scores)/max(len(transcripts), len(truth_transcripts))
+    result.save()
+        
     return HttpResponse('Success', content_type="text/html; charset=utf-8")

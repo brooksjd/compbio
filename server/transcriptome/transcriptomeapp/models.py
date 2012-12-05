@@ -30,18 +30,7 @@ class Read(models.Model):
 #    exon1 = models.ForeignKey(Exon, related_name='junction_reads_1')
 #    exon2 = models.ForeignKey(Exon, related_name='junction_reads_2')
 #    count = models.IntegerField()
-    
-class Result(models.Model):
-    gene = models.ForeignKey(Gene)
-    experiment = models.ForeignKey(Experiment)
-    score = models.FloatField()
-    user = models.CharField(max_length=200, null=True, blank=True)
-    
-class Transcript(models.Model):
-    result = models.ForeignKey(Result)
-    expression = models.FloatField()
-    exons = models.ManyToManyField(Exon)
-    
+
 class Truth(models.Model):
     gene = models.ForeignKey(Gene)
     experiment = models.ForeignKey(Experiment)
@@ -51,3 +40,19 @@ class TruthTranscript(models.Model):
     expression = models.FloatField()
     exons = models.ManyToManyField(Exon)
     exonCount = models.IntegerField()
+    
+class Result(models.Model):
+    gene = models.ForeignKey(Gene)
+    experiment = models.ForeignKey(Experiment)
+    score = models.FloatField()
+    user = models.CharField(max_length=200, null=True, blank=True)
+    truthScore = models.FloatField(null=True, blank=True)
+    truth = models.ForeignKey(Truth, null=True, blank=True)
+    version = models.CharField(max_length=10)
+    
+class Transcript(models.Model):
+    result = models.ForeignKey(Result)
+    expression = models.FloatField()
+    exons = models.ManyToManyField(Exon)
+    truthScore = models.FloatField(null=True, blank=True)
+    truthTranscript = models.ForeignKey(TruthTranscript, null=True, blank=True)
