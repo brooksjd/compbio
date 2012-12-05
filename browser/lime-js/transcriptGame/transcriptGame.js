@@ -227,7 +227,7 @@ function initControls(exonSprites,gameObj,exonWidths){
 var puzzleData;
 
 transcriptGame.getPuzzle = function(){
-	jQuery.getJSON( 'http://localhost:8000/transcriptomeapp/get_puzzle', function(data){
+	jQuery.getJSON( '/transcriptomeapp/get_puzzle', function(data){
 		console.log('Got puzzle');
 		puzzleData = data;
 		console.log(puzzleData);
