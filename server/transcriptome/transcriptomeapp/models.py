@@ -47,7 +47,7 @@ class Result(models.Model):
     score = models.FloatField()
     user = models.CharField(max_length=200, null=True, blank=True)
     truthScore = models.FloatField(null=True, blank=True)
-    truth = models.ForeignKey(Truth)
+    truth = models.ForeignKey(Truth, null=True, blank=True)
     version = models.CharField(max_length=10)
     
 class Transcript(models.Model):
@@ -55,4 +55,4 @@ class Transcript(models.Model):
     expression = models.FloatField()
     exons = models.ManyToManyField(Exon)
     truthScore = models.FloatField(null=True, blank=True)
-    truthTranscript = models.ForeignKey(TruthTranscript)
+    truthTranscript = models.ForeignKey(TruthTranscript, null=True, blank=True)
