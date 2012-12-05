@@ -256,7 +256,7 @@ function computeScore(transcriptList, transcriptCount, puzzle)
         {
             if (transcriptList[i][j] == 1)
             {
-                currScore += puzzle.exonWidths[j];
+                currScore += Math.log(puzzle.exonWidths[j]);
                 count++;
             }
         }
@@ -273,7 +273,7 @@ function computeScore(transcriptList, transcriptCount, puzzle)
 
     score = Math.round(score*discount);
 
-    return score;
+    return score*5;
 }
 
 // entrypoint
