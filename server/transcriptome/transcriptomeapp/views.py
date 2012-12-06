@@ -31,7 +31,7 @@ def get_puzzle(request):
     read_length = 75
     max_allowable_exon_height = 38
     junction_norm = read_length * 2
-    scoring_version = '1.0.0'
+    scoring_version = '1.1.0'
     
     acceptable_puzzle = False
     while not acceptable_puzzle:
