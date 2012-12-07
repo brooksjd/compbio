@@ -218,6 +218,7 @@ def user_result(request):
     transcripts = json.loads(request.POST['transcripts'])
     
     transcript_scores = []
+    found_transcripts = 0
     
     print 'number of transcripts: ' + str(len(transcripts))
     for i, transcript_exons in enumerate(transcripts):
@@ -241,6 +242,8 @@ def user_result(request):
             found_transcript_expression = transcript_dict[transcript_key]
             found_transcript = transcript_object_dict[transcript_key]
             
+            found_transcripts += 1
+            
             this_expression = expressions[i]/sum_expressions
             that_expression = found_transcript_expression/sum_truth_expressions
             expression_diff =  1 - abs(that_expression - this_expression) # subtract from 1 to make higher better
@@ -256,6 +259,9 @@ def user_result(request):
             print 'Could not find transcript: ' + transcript_key
             pass
         
+    result.truthPrecision = float(found_transcripts)/len(transcripts)
+    result.truthRecall = float(found_transcripts)/len(truth_transcripts)
+    
     result.truthScore = sum(transcript_scores)/max(len(transcripts), len(truth_transcripts))
     result.save()
         

@@ -49,6 +49,8 @@ class Result(models.Model):
     truthScore = models.FloatField(null=True, blank=True)
     truth = models.ForeignKey(Truth, null=True, blank=True)
     version = models.CharField(max_length=10)
+    truthRecall = models.FloatField(null=True, blank=True)
+    truthPrecision = models.FloatField(null=True, blank=True)
     
 class Transcript(models.Model):
     result = models.ForeignKey(Result)
