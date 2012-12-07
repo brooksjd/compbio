@@ -58,28 +58,32 @@ We simulated short reads using Flux Simulator \citep{sammeth2010flux} running on
 
 We simulated over 6 million reads of 75 nucleotides long each from 7,901 transcripts of 3324 genes (average transcript per gene = 2.4) and pushed information about read count and mapped exons to the database. Since the simulator created random expression levels for each transcript provided leading to the possibility that some transcripts may not have been expressed, we only included in the puzzle genes with at least 2 expressed transcripts.
 
-Since the number of reads mapped to an exon depends heavily on the number of length of the exon, we normalized the read counts by exon length. Additionally, we also scaled the read counts to be able to fit most puzzles on typical computer screens. The normalization and scaling was done using the following expression:
+Since the number of reads mapped to an exon depends heavily on the length of the exon, we normalized the read counts by exon length. Additionally, we also scaled the read counts to be able to fit most puzzles on typical computer screens. If $r_i$ and $r_{ij}$ are the original read counts for reads falling wholly in one exon $e_i$ and reads falling across exons $e_i$ and $e_j$ respectively and $k$ is the read length, the normalized counts,  $r'_i$ and $r'_{ij}$, and scaled counts, $r''_i$ and $r''_{ij}$, are obtained by:
+\begin{align*}
+r'_i &= \frac{r_i}{|e_i|} \\
+r'_{ij} &= \frac{r_{ij}}{2k} \\
+r''_i &= \frac{r'_i}{\underset{r*' \in r', r*' \not = 0}{min(r*')}} \\
+r''_{ij} &= \frac{r''_{ij}}{\underset{r*' \in r', r*' \not = 0}{min(r*')}} \\
+\end{align*}
 
 \subsection*{Game implementation}
-The game interface is built using the LimeJS HTML5 game framework. This framework provided methods for creating shapes,
-animations, and handling user interaction events, allowing us to focus more on developing the core functionality of the game.
-Additionally, the fact that the game is implemented in HTML5 and javascript means that it can be played natively in most 
-popular browsers, as well as both desktop and mobile hardware.
+The game interface was built using the LimeJS HTML5 game framework. This framework provides methods for creating shapes,
+animations, and handling user interaction events. It allowed us to focus more on developing the core functionality of the game.
+Additionally, the fact that the game is implemented in HTML5 and Javascript means that it can be played in most popular browsers running on both desktop and mobile hardware.
 
-We also made use of Kenneth Kelly's list of 22 colors of maximum contrast \citep{green2010colour}. This allowed us to assign a unique color each exon
-in a particular puzzle that was easily distinguishable from the colors of all the other exons. This allowed us to present genes to 
+We also made use of Kenneth Kelly's list of 22 colors of maximum contrast \citep{green2010colour}. This allowed us to assign, to each exon in a particular puzzle, a unique color that was easily distinguishable from the colors of all the other exons. This enabled us to present genes to 
 users in a manner that was both visually appealing and functional.
+
+We utilized a Python/Django server for communicating with the frontend using the Javascript Object Notation (JSON) format. The database used is a MySQL database running on the internal CSAIL MySQL servers. 
 
 \subsection*{Solution scoring}
 \label{sec:scoring}
 \subsubsection*{Frontend}
-How the user's will approach each puzzle is a function of both the given puzzle and how their solution for that puzzle is scored. Thus, we must have
-a proper scoring system in order to influence user's to find accurate lists of transcripts for particular gene. However, as there is no real ``ground truth"
-for a list of transcripts for a particular gene, we would like to have a scoring system that is independent of existing transcript annotations. Existing methods
-for transcriptome assembly value small lists of unique transcripts, transcripts that include more exons, and transcripts that include more nucleotide bases (citations).
+Since there will be no ground truth for real, unsimulated data, it is essential for us to have
+a scoring system that is both able to influence user's approach to finding accurate lists of transcripts for a particular gene as well as be independent of existing transcript annotations. We hypothesize that the best results will be small lists of unique transcripts, transcripts that include more exons, and transcripts that include more nucleotide bases.
 Thus we developed the following scoring metric for scoring transcript list $T$ :
 \begin{equation*}
-S(T) = d(T) * \sum_{i=1}^{|T|} \log{|T_i|} * \sum_{j = 1}^{|T_i|} \log{n_{ik}}
+S(T) = d(T) * \sum_{i=1}^{|T|} \log{|T_i|} * \sum_{k = 1}^{|T_i|} \log{n_{ik}}
 \end{equation*}
 \begin{equation*}
 d(T) = \frac{1}{1+e^{\gamma |T|}}
@@ -88,21 +92,21 @@ where $|T|$ is the number of transcripts in $T$, $|T_i|$ is the number of exons 
 $d$ is a discount factor with parameter $\gamma$ that controls how longer lists of transcripts are devalued. Setting $\gamma = .001$ seemed to achieve the desired
 discounting of long transcript lists within the context of the game. Furthermore, the $\log{|T_i|}$ factor ensures that transcripts that only contain one exon will not factor
 into the player's score, which is a desirable property given that players often have to add transcripts with one exon in order to finish out a puzzle.
-\subsubsection{Backend}
-In addition to the precision and recall, we also scored a puzzle using the expression levels of the transcripts found against the ground truth. Where $T'$ is the set of transcripts in the ground truth, and $e(T'_i)$ and $e(T_i)$ are the expression levels of the transcripts in the ground truth and user solution respectively expressed as a fraction of the total expression level of the gene, the score, $S_{truth}(T_i)$ ,for a particular transcript is given by:
+\subsubsection*{Backend}
+In addition to the precision and recall, we also scored a puzzle using the expression levels of the transcripts found against the expression levels in the ground truth. Where $T'$ is the set of transcripts in the ground truth of a particular gene/puzzle, and $e(T'_i)$ and $e(T_i)$ are the expression levels of the transcripts in the ground truth and user solution respectively expressed as a fraction of the total expression level of the gene, the score, $S_{truth}(T_i)$ ,for a particular transcript is given by:
 \begin{align*}
-S_{truth}(T_i) &= \sum\limits_{j = 1}^{|T'|}(1 - abs(e(T'_j) - e(T_i)))\mathbbm{1}\{T'_j = T_i\} 
+S_{truth}(T_i) &= \sum\limits_{j = 1}^{|T'|}(1 - abs(e(T'_j) - e(T_i)))\mathbbm{1}\{T'_j = T_i\} \quad \text{where $\mathbbm{1}\{\}$ is an indicator function}
 \end{align*}
 The score for the entire puzzle $S_{truth}(T)$ is then given by:
 \begin{align*}
-S_{truth}(T) = \frac{\sum\limits_{i=1}^{|T|} S_{truth}(T_i)}{max(|T|, |T|)}
+S_{truth}(T) = \frac{\sum\limits_{i=1}^{|T|} S_{truth}(T_i)}{max(|T'|, |T|)}
 \end{align*}
 This gives a score of 1 for solutions with perfect transcript and expression level identification, a score of 0 for solutions where no transcript is perfectly identified and a score between 0 and 1 for solutions with some error in transcript identification or expression level assignment.
 
 \section*{Results and Discussion}
 In just over 66 hours of making the game available to players, we received close to 250 submissions and made some interesting preliminary observations. Most of the user results discovered at least one of the transcripts underlying the read data and almost a third of the user results discovered all the transcripts as shown in the recall plot in Figure \ref{fig:precisionandrecall}. Figure \ref{fig:precisionandrecall} also shows that most of the solutions also had at least one accurate transcript and a few were entirely accurate. This suggests that the game representation was helpful in guiding the players to discover the transcripts. It is interesting to note that most of the 2-exon gene transcripts were fully discovered. However, the precision and recall is reduced as the number of exons increase.
 
-Some of the results, however, did not discover any reads and had zero precision. There are two possible reasons for this: it is possible that there were players who did not pay enough attention to the game to obtain good results; It is also possible that some puzzles were particularly difficult. As a future direction, it will be useful to track some identifier for every user and use their average performance on multiple puzzles to weight our confidence in their submissions. As more users play each puzzles, it will also become possible to identify puzzles that are particularly difficult as well as identifying outlier puzzle solutions.
+Some of the results, however, did not discover any reads and had zero precision. There are two possible reasons for this: it is possible that there were players who did not pay enough attention to the game to obtain good results; it is also possible that some puzzles were particularly difficult. As a future direction, it will be useful to track some identifier for every user and use their average performance on multiple puzzles to weight our confidence in their submissions. As more users play each puzzles, it will also become possible to identify puzzles that are particularly difficult as well as identifying outlier puzzle solutions.
 
 \begin{figure}[H]
 \centering
@@ -119,6 +123,8 @@ In Section \ref{sec:scoring}, we described a frontend scoring scheme utilizing s
 \subfigure[Frontend Score]{\includegraphics [width=0.45\textwidth]{FrontendScore}}
 \caption{Expression Accuracy and Frontend Score of user-submitted results}\label{fig:score}
 \end{figure}
+
+We recruited volunteer testers for our game from the MIT community: friends, classmates, dorm mates etc. We received qualitative feedback on the likeability of the game and the learning curve in addition to discovering transcripts and expression levels. Most of the feedback was positive with users wishing they knew more about how to get higher scores and explaining that a video might have been more useful for learning the mechanics of the game than the instructions. Many users were, however, able to figure out the mechanics of the game after one or two tries even without reading the instructions.
 
 We originally planned to have users play puzzles that were generated from real RNA-seq data in addition to the synthetic data generated using Flux Simulator.
 We obtained the same experimental RNA-seq data used by Trapnell et al. in the original Cufflinks paper \citep{trapnell2010transcript}. We mapped the reads to 

@@ -150,7 +150,7 @@ xlabel('Recall')
 ylabel('Number of results')
 
 %% Accuracy stacked hist
-truthScoreWithExonCount = dlmread('truthScoreWithExonCount.csv');
+truthScoreWithExonCount = dlmread('scoreWithExonCount.csv');
 
 minScore = min(truthScoreWithExonCount(:,1));
 maxScore = max(truthScoreWithExonCount(:,1));
@@ -179,7 +179,7 @@ C=[[250 235 0]; [128 62 117]; [0 255 255]; [127 255 212]; ...
 
 colormap(C);
 bar(histBins, aggregated, 'stacked');
-set(gca, 'XTick', floor(histBins * 100)/100);
+set(gca, 'XTick', floor(histBins * 10)/10);
 
 % P=findobj(gca,'type','patch');
 
@@ -191,6 +191,6 @@ set(gca, 'XTick', floor(histBins * 100)/100);
 set(gca, 'FontSize', 22);
 legendObj = legend(legendCell);
 set(legendObj, 'FontSize', 17)
-xlabel('Expression Accuracy')
+xlabel('Frontend score')
 ylabel('Number of results')
 
