@@ -8,6 +8,7 @@
 \usepackage{longtable}
 \usepackage[table]{xcolor}
 \usepackage{tabularx}
+\usepackage{subfigure}
 \usepackage{parskip}
 \usepackage[round]{natbib}
 \restylefloat{figure}
@@ -71,6 +72,7 @@ in a particular puzzle that was easily distinguishable from the colors of all th
 users in a manner that was both visually appealing and functional.
 
 \subsection*{Solution scoring}
+\label{sec:scoring}
 How the user's will approach each puzzle is a function of both the given puzzle and how their solution for that puzzle is scored. Thus, we must have
 a proper scoring system in order to influence user's to find accurate lists of transcripts for particular gene. However, as there is no real ``ground truth"
 for a list of transcripts for a particular gene, we would like to have a scoring system that is independent of existing transcript annotations. Existing methods
@@ -88,6 +90,25 @@ discounting of long transcript lists within the context of the game. Furthermore
 into the player's score, which is a desirable property given that players often have to add transcripts with one exon in order to finish out a puzzle.
 
 \section*{Results and Discussion}
+Most of the user results discovered at least one of the transcripts underlying the read data and almost a third of the user results discovered all the transcripts as shown in the recall plot in Figure \ref{fig:precisionandrecall}. Figure \ref{fig:precisionandrecall} also shows that most of the solutions also had at least one accurate transcript and a few were entirely accurate. This suggests that the game representation was helpful in guiding the players actions. 
+
+Some of the results, however, did not discover any reads and had zero precision. There are two possible reasons for this: it is possible that there were players who did not pay enough attention to the game to obtain good results; It is also possible that some puzzles were particularly difficult. As a future direction, it will be useful to track some identifier for every user and use their average performance on multiple puzzles to weight our confidence in their submissions. As more users play each puzzles, it will also become possible to identify puzzles that are particularly difficult as well as identifying outlier puzzle solutions.
+
+\begin{figure}[H]
+\centering
+\subfigure[Precision]{\includegraphics [width=0.45\textwidth]{Precision}} 
+\subfigure[Recall]{\includegraphics [width=0.45\textwidth]{Recall}} 
+\caption{Precison and Recall of user-submitted results}\label{fig:precisionandrecall}
+\end{figure}
+
+In Section \ref{sec:scoring}, we described a frontend scoring scheme utilizing specifics of the solution and a backend scoring scheme against the ground truth. It is our intention to manually or automatically learn the frontend scoring scheme for use against data unsimulated data with no ground truth. Figure \ref{fig:score} shows that players generally perform better on both scoring schemes in puzzles involving fewer exons. This is to be expected since puzzles with more exons have exponentially more possible transcripts and expression levels. In future versions, we will stratify the game by difficulty levels and allow players gain experience at simpler levels before moving on to more difficult puzzles. We also believe that it is possible to apply machine learning algorithms to the frontend scoring parameters and learn the optimal scoring parameters.
+
+\begin{figure}[H]
+\centering
+\subfigure[Expression Accuracy]{\includegraphics [width=0.45\textwidth]{ExpressionAccuracy}}
+\subfigure[Frontend Score]{\includegraphics [width=0.45\textwidth]{FrontendScore}}
+\caption{Expression Accuracy and Frontend Score of user-submitted results}\label{fig:score}
+\end{figure}
 
 We originally planned to have users play puzzles that were generated from real RNA-seq data in addition to the synthetic data generated using Flux Simulator.
 We obtained the same experimental RNA-seq data used by Trapnell et al. in the original Cufflinks paper \citep{trapnell2010transcript}. We mapped the reads to 

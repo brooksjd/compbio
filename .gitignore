@@ -54,3 +54,50 @@
 /C:/Users/Seamfix90/Documents/classproject/6.878/main/utilities/transcriptome.gtf
 /utilities/filtered_transcriptome.gtf
 /server/transcriptome/transcriptomeapp/management/commands/score_results.pyc
+/server/transcriptome/transcriptomeapp/management/commands/calc_accuracy.pyc
+/finalreport/finalreport.aux
+/finalreport/finalreport.bbl
+/finalreport/finalreport.blg
+/finalreport/finalreport.dvi
+/finalreport/finalreport.log
+/finalreport/finalreport.pdf
+/finalreport/finalreport.synctex.gz
+/utilities/Analysis.asv
+/utilities/Count Per Exon Count.fig
+/utilities/Expression Accuracy Fraction.pdf
+/utilities/Expression Accuracy.pdf
+/utilities/Frontend Score.pdf
+/utilities/Mean Truth Score Per Exon Count.fig
+/utilities/Precision Hist.fig
+/utilities/Precision Per Exon Count.fig
+/utilities/Precision.pdf
+/utilities/Recall Hist.fig
+/utilities/Recall Per Exon Count.fig
+/utilities/Recall.pdf
+/utilities/Score Per Exon Count - all versions.fig
+/utilities/Score Per Exon Count - version 1.0.0.fig
+/utilities/Score Per Exon Count - version 1.1.0.fig
+/utilities/Truth Scores Hist.fig
+/utilities/export_fig/.ignore/ghostscript.txt
+/utilities/export_fig/.ignore/gs_font_path.txt
+/utilities/export_fig/copyfig.m
+/utilities/export_fig/eps2pdf.m
+/utilities/export_fig/export_fig.m
+/utilities/export_fig/fix_lines.m
+/utilities/export_fig/ghostscript.m
+/utilities/export_fig/isolate_axes.m
+/utilities/export_fig/license.txt
+/utilities/export_fig/pdf2eps.m
+/utilities/export_fig/pdftops.m
+/utilities/export_fig/print2array.m
+/utilities/export_fig/print2eps.m
+/utilities/export_fig/user_string.m
+/utilities/precision.csv
+/utilities/recall.csv
+/utilities/scoreWithExonCount.csv
+/utilities/scoreWithExonCount_version1.0.0.csv
+/utilities/scoreWithExonCount_version1.1.0.csv
+/utilities/truthPrecisionWithExonCount.csv
+/utilities/truthRecallWithExonCount.csv
+/utilities/truthScoreWithExonCount.csv
+/utilities/truthScores.csv
