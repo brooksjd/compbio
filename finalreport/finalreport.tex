@@ -37,7 +37,7 @@ In this project, we explored the possibility of humans finding alternative sets 
 
 \section*{Methods}
 
-\subsection*{Game Overview}
+\subsection*{Game overview}
 The game is designed to utilize human-powered computation to explore transcriptome possibilities for certain genes using experimental data from
 RNA-seq. Experimental data is first mapped to a genome using a splicing-aware read aligner such as TopHat \citep{trapnell2009tophat}. From these mappings,
 relative abundance levels of each exon within a gene are inferred.
@@ -72,22 +72,23 @@ r''_{ij} &= \frac{r''_{ij}}{\underset{r*' \in r', r*' \not = 0}{min(r*')}} \\
 \end{align*}
 
 \subsection*{Game implementation}
-The game interface was built using the LimeJS HTML5 game framework. This framework provides methods for creating shapes,
+The game interface was built using the LimeJS (http://www.limejs.com/) HTML5 game framework . This framework provides methods for creating shapes,
 animations, and handling user interaction events. It allowed us to focus more on developing the core functionality of the game.
 Additionally, the fact that the game is implemented in HTML5 and Javascript means that it can be played in most popular browsers running on both desktop and mobile hardware.
 
-We also made use of Kenneth Kelly's list of 22 colors of maximum contrast \citep{green2010colour}. This allowed us to assign, to each exon in a particular puzzle, a unique color that was easily distinguishable from the colors of all the other exons. This enabled us to present genes to 
+We also made use of Kenneth Kelly's list of 22 colors of maximum contrast \citep{green2010colour}. This allowed us to assign each exon in a particular puzzle a unique color that was easily distinguishable from the colors of all the other exons. This enabled us to present genes to 
 users in a manner that was both visually appealing and functional.
 
 We utilized a Python/Django server for communicating with the frontend using the Javascript Object Notation (JSON) format. The database used is a MySQL database running on the internal CSAIL MySQL servers. 
 
 The game is currently hosted at http://chameleon.csail.mit.edu:3000/transcriptomeapp/ and will be available for play at that location until December 31st.
 
-\subsection*{Solution scoring}
-\label{sec:scoring}
+\subsection*{Solution scoring} 
+
 \subsubsection*{Frontend}
+\label{sec:scoring}
 Since there will be no ground truth for real, unsimulated data, it is essential for us to have
-a scoring system that is both able to influence user's approach to finding accurate lists of transcripts for a particular gene as well as be independent of existing transcript annotations. We hypothesize that the best results will be small lists of unique transcripts, transcripts that include more exons, and transcripts that include more nucleotide bases.
+a scoring system that is both able to influence user's approach to finding accurate lists of transcripts for a particular gene as well as to be independent of existing transcript annotations. We hypothesize that the best results will be small lists of unique transcripts, transcripts that include more exons, and transcripts that include more nucleotide bases.
 Thus we developed the following scoring metric for scoring transcript list $T$ :
 \begin{equation*}
 S(T) = d(T) * \sum_{i=1}^{|T|} \log{|T_i|} * \sum_{k = 1}^{|T_i|} \log{n_{ik}}
@@ -100,7 +101,7 @@ $d$ is a discount factor with parameter $\gamma$ that controls how longer lists 
 discounting of long transcript lists within the context of the game. Furthermore, the $\log{|T_i|}$ factor ensures that transcripts that only contain one exon will not factor
 into the player's score, which is a desirable property given that players often have to add transcripts with one exon in order to finish out a puzzle.
 \subsubsection*{Backend}
-In addition to the precision and recall, we also scored a puzzle using the expression levels of the transcripts found against the expression levels in the ground truth. Where $T'$ is the set of transcripts in the ground truth of a particular gene/puzzle, and $e(T'_i)$ and $e(T_i)$ are the expression levels of the transcripts in the ground truth and user solution respectively expressed as a fraction of the total expression level of the gene, the score, $S_{truth}(T_i)$ ,for a particular transcript is given by:
+In addition to computing the precision and recall, we also scored a puzzle using the expression levels of the transcripts found against the expression levels in the ground truth. Given $T'$, the set of transcripts in the ground truth of a particular gene/puzzle, and $e(T'_i)$ and $e(T_i)$, the relative expression levels of the transcripts in the ground truth and user solution, respectively, the score, $S_{truth}(T_i)$, for a particular transcript is computed as:
 \begin{align*}
 S_{truth}(T_i) &= \sum\limits_{j = 1}^{|T'|}(1 - abs(e(T'_j) - e(T_i)))\mathbbm{1}\{T'_j = T_i\} \quad \text{where $\mathbbm{1}\{\}$ is an indicator function}
 \end{align*}
@@ -111,9 +112,9 @@ S_{truth}(T) = \frac{\sum\limits_{i=1}^{|T|} S_{truth}(T_i)}{max(|T'|, |T|)}
 This gives a score of 1 for solutions with perfect transcript and expression level identification, a score of 0 for solutions where no transcript is perfectly identified and a score between 0 and 1 for solutions with some error in transcript identification or expression level assignment.
 
 \section*{Results and Discussion}
-In just over 66 hours of making the game available to players, we received close to 250 submissions and made some interesting preliminary observations. Most of the user results discovered at least one of the transcripts underlying the read data and almost a third of the user results discovered all the transcripts as shown in the recall plot in Figure \ref{fig:precisionandrecall}. Figure \ref{fig:precisionandrecall} also shows that most of the solutions also had at least one accurate transcript and a few were entirely accurate. This suggests that the game representation was helpful in guiding the players to discover the transcripts. It is interesting to note that most of the 2-exon gene transcripts were fully discovered. However, the precision and recall is reduced as the number of exons increase.
+In just over 66 hours of making the game available to players, we received close to 250 submissions and made some interesting preliminary observations. Most of the user results discovered at least one of the transcripts underlying the read data and almost a third of the user results discovered all the transcripts as shown in the recall plot in Figure \ref{fig:precisionandrecall}. Figure \ref{fig:precisionandrecall} also shows that most of the solutions also had at least one accurate transcript and a few were entirely accurate. This suggests that the game representation was helpful in guiding the players to discover the transcripts. It is interesting to note that most of the 2-exon gene transcripts were fully discovered. However, the precision and recall is reduced as the number of exons increase. It is also interesting to note that the difference between recall and precision suggests that users, in general, seemed to find too many transcripts, and thus a frontend scoring scheme that penalizes longer lists of transcripts more may produce lead to better results.
 
-Some of the results, however, did not discover any reads and had zero precision. There are two possible reasons for this: it is possible that there were players who did not pay enough attention to the game to obtain good results; it is also possible that some puzzles were particularly difficult. As a future direction, it will be useful to track some identifier for every user and use their average performance on multiple puzzles to weight our confidence in their submissions. As more users play each puzzles, it will also become possible to identify puzzles that are particularly difficult as well as identifying outlier puzzle solutions.
+Some of the results, however, did not discover any of the correct transcripts and had zero precision. There are two possible reasons for this: it is possible that there were players who did not pay enough attention to the game to obtain good results; it is also possible that some puzzles were particularly difficult. As a future direction, it will be useful to track some identifier for every user and use their average performance on multiple puzzles to weight our confidence in their submissions. As more users play each puzzles, it will also become possible to identify puzzles that are particularly difficult as well as identifying outlier puzzle solutions.
 
 \begin{figure}[H]
 \centering
@@ -122,7 +123,7 @@ Some of the results, however, did not discover any reads and had zero precision.
 \caption{Precison and Recall of user-submitted results}\label{fig:precisionandrecall}
 \end{figure}
 
-In Section \ref{sec:scoring}, we described a frontend scoring scheme utilizing specifics of a solution and a backend scoring scheme against the ground truth. It is our intention to manually or automatically learn the frontend scoring scheme for use against actual, unsimulated data with no ground truth. Figure \ref{fig:score} shows that, despite encouraging results in detecting transcripts, players have difficulty in correctly assigning expression levels. The plots also demonstrate a disconnect between the front-end scores and backend ground truth-based scoring. This indicates the need for further work in fine-tuning the frontend scoring scheme to correlate more closely with the performance against ground truth while allowing players find novel transcripts that are not
+In the \emph{Solution scoring} section, we described a frontend scoring scheme utilizing specifics of a solution and a backend scoring scheme against the ground truth. It is our intention to manually or automatically learn the frontend scoring scheme for use against actual, unsimulated data with no ground truth. Figure \ref{fig:score} shows that, despite encouraging results in detecting transcripts, players have difficulty in correctly assigning expression levels. The plots also demonstrate a disconnect between the front-end scores and backend ground truth-based scoring. This indicates the need for further work in fine-tuning the frontend scoring scheme to correlate more closely with the performance against ground truth while allowing players find novel transcripts that are not
 identified by existing computational methods. Additionally, we believe that it is possible to apply machine learning algorithms to the frontend scoring parameters and learn the optimal scoring parameters.
 
 \begin{figure}[H]
@@ -134,14 +135,14 @@ identified by existing computational methods. Additionally, we believe that it i
 
 An unanticipated outcome of this game is that we realize that, in addition to allowing users recreate the transcriptome, we had also created a visualization tool that could give scientists an interesting view into the transcriptome. Visualization remains an important step in the research process and this tool is a first step towards another way of looking at how genes are spliced.
 
-\section*{Future Goals}
+\section*{Future goals}
 
 We originally planned to have users play puzzles that were generated from real RNA-seq data in addition to the synthetic data generated using Flux Simulator.
 We obtained the same experimental RNA-seq data used by Trapnell et al. in the original Cufflinks paper \citep{trapnell2010transcript}. We mapped the reads to 
 the mouse genome using TopHat, and were hoping to construct puzzles based on these data in the same manner as we did with the synthetic data. However, due
 to time constraints, we felt it was better to focus primarily on the synthetic data, as this allowed us to compare user solutions to a ground truth transcriptome. We also attempted to compare our results with existing algorithms like Cufflinks, Scripture and IsoLasso. Due to time constraints and issues with file formats we were unable to complete these comparisons.
 
-We recruited volunteer testers for our game from the MIT community: friends, classmates, dorm mates etc and received qualitative feedback on the likeability of the game and the learning curve in addition to discovering transcripts and expression levels. We received mostly
+We recruited volunteer testers for our game from the MIT community: friends, classmates, dorm mates etc. and received qualitative feedback on the likeability of the game and the learning curve in addition to discovering transcripts and expression levels. We received mostly
 positive feedback from the users that played the game, however, a significant amount of people found the rules of the game to be somewhat confusing. In response,
 we would like to make the rules regarding ``linked" blocks removal clearer. The confusion was probably due to lack of specific examples of how the ``linked" blocks
 work. Thus, adding a tutorial level, gameplay video, or even screenshots that focus on this specific aspect of gameplay would likely help to clear up the confusion. In future versions, we will also stratify the game by difficulty levels and allow players gain experience at simpler levels before moving on to more difficult puzzles. 
@@ -153,11 +154,11 @@ feature as part of the game.
 
 Our main goal from the beginning of the project was to implement the game, and we were able to create a fully functionally final product and test its viability on a select set of users. The main
 difference between our original proposal and our final set of accomplishments is the level of detail to which the user results were analyzed. We originally wanted to run a pool of algorithms
-on the same data that we used to construct the puzzles used in the game, however, we were not able to accomplish this due to time constraint. This became more apparent when we
+on the same data that we used to construct the puzzles used in the game, however, we were not able to accomplish this due to time constraints. This became more apparent when we
 completed midcourse report and analyzed what we had left to accomplish. However, we feel that the
 algorithmic analysis, while potentially very beneficially, is secondary to the creation and demonstration of the game. Thus, even though we did not achieve all that we had originally set out to accomplish, we are elated at the level of success we achieved.
 
-\section*{Commentary on Experience}
+\section*{Commentary on experience}
 
 In general, starting our tasks earlier would have allowed us to better manage time and possibly achieve more of the goals we set out to accomplish in our original project proposal.
 There were unanticipated delays that could have been mitigated by leaving more time margins than we thought we needed. For example, data collection was not an issue for us, but
@@ -166,7 +167,7 @@ required a significant amount of design and programming. Identifying these bottl
 
 One of the great things about working on this project is that we have a finished tool that we can  send out to the general public and have people try out. We received quite a bit of feedback from the initial users and people generally had positive things to say. We are proud to be able to apply the things we learnt in class to a tool that can be appreciated by people that previously knew nothing about computational biology.
 
-\section*{Commentary on Peer Review Process}
+\section*{Commentary on peer review process}
 
 The reviews were helpful because they all pointed out that our original timeline was not granular enough and needed to be broken down. We incorporated an updated timeline in our midcourse
 report, which was important as it made us step back and analyze how far we had come from when we started the project, and what we had left to do in the time that remained. Breaking down lumped-up steps in the original timeline also allowed us identify bottlenecks that would have been critical in the course of the project. This
