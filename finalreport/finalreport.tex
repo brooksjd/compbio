@@ -59,7 +59,7 @@ sent back to the server and stored in the database. The user then has the option
 \end{figure}
 
 \subsection*{Data acquisition and preparation}
-We simulated short reads using Flux Simulator \citep{sammeth2010flux} running on data from the mouse mm9 genome annotated with the locations of genes, exons, and transcripts. To make the problem more tractable, we eliminated all instances of intron-skipping and used only genes with at least two known transcripts. We also only included genes where the known transcripts differed by the presence or absence of exons i.e. we ignored the phenomena of varying transcription starts and represented the data such that all transcripts are assumed to start at the same base in the start exon(s). We also ignored polyadenylation sites. 
+We simulated short reads using Flux Simulator \citep{sammeth2010flux} running on data from the mouse mm9 genome annotated with the locations of genes, exons, and transcripts \citep{karolchik2008ucsc}. To make the problem more tractable, we eliminated all instances of intron-skipping and used only genes with at least two known transcripts. We also only included genes where the known transcripts differed by the presence or absence of exons i.e. we ignored the phenomena of varying transcription starts and represented the data such that all transcripts are assumed to start at the same base in the start exon(s). We also ignored polyadenylation sites. 
 
 We simulated over 6 million reads of 75 nucleotides long each from 7,901 transcripts of 3324 genes (average transcripts per gene = 2.4) and pushed information about read count and mapped exons to the database. Since the simulator created random expression levels for each transcript provided leading to the possibility that some transcripts may not have been expressed, we only included in the puzzle genes with at least 2 expressed transcripts.
 
@@ -138,7 +138,7 @@ An unanticipated outcome of this game is that we realize that, in addition to al
 \section*{Future goals}
 
 We originally planned to have users play puzzles that were generated from real RNA-seq data in addition to the synthetic data generated using Flux Simulator.
-We obtained the same experimental RNA-seq data used by Trapnell et al. in the original Cufflinks paper \citep{trapnell2010transcript}. We mapped the reads to 
+We obtained the same experimental RNA-seq data used by Trapnell et al. in the original Cufflinks paper (\cite{trapnell2010transcript}, NCBI SRA accession number SRR037947). We mapped the reads to 
 the mouse genome using TopHat, and were hoping to construct puzzles based on these data in the same manner as we did with the synthetic data. However, due
 to time constraints, we felt it was better to focus primarily on the synthetic data, as this allowed us to compare user solutions to a ground truth transcriptome. We also attempted to compare our results with existing algorithms like Cufflinks, Scripture and IsoLasso. Due to time constraints and issues with file formats we were unable to complete these comparisons.
 
@@ -177,6 +177,9 @@ concerns about the playability of the game, however, we felt these points were n
 \section*{Division of labor}
 
 Chidube performed the simulations on synthetic data, developed and managed the web server and data processing utilities, and performed the post collection data analysis and server-side scoring. Joel prepared the experimental RNA-seq data, designed the web browser interface, and was the primary developer of the game functionality and frontend scoring system. Both Chidube and Joel contributed to high level game and project design, as well as writing of the proposals and final report.
+
+\section*{Acknowledgments}
+We would like to acknowledge Deniz Yorukoglu and Po-Ru Loh for their mentorship and feedback.
 
 \bibliography{frbib}
 
